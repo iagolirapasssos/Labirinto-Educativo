@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto de Programação</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="blocos-disponiveis">
+        <h2>Blocos Disponíveis</h2>
+        <p class="instrucao">Arraste os blocos para a área "Meu Programa" ➡️</p>
+        <!-- Blocos serão gerados dinamicamente pelo blocks.js -->
+    </div>
+
+    <div id="labirinto-container">
+        <div id="nivel-controles">
+            <select id="nivel-select">
+                <option value="facil">Nível Fácil (8x8)</option>
+                <option value="medio">Nível Médio (12x12)</option>
+                <option value="dificil">Nível Difícil (15x15)</option>
+            </select>
+            <button id="novo-labirinto">🔄 Novo Labirinto</button>
+        </div>
+        <div id="labirinto"></div>
+        <div id="controles">
+            <button id="executar">▶ Executar</button>
+            <button id="pausar" disabled>⏸ Pausar</button>
+            <button id="parar" disabled>⏹ Parar</button>
+            <button id="limpar">🗑 Limpar</button>
+            <!-- Novos Botões -->
+            <button id="salvar-programa">💾 Salvar Programa</button>
+            <button id="abrir-programa">📂 Abrir Programa</button>
+            <!-- Input para abrir programa (oculto) -->
+            <input type="file" id="input-abrir-programa" accept="application/json" style="display: none;">
+        </div>
+    </div>
+
+    <div id="programa-container">
+        <div id="programa-header">
+            <h2>Meu Programa</h2>
+            <div id="resize-handle">↔</div>
+        </div>
+        <div class="instrucao-programa">
+            Arraste os blocos para esta área e organize-os na ordem que deseja executar
+        </div>
+        <div id="programa">
+            <div id="sequencia-blocos" class="bloco-container drop-zone">
+                <div class="programa-placeholder">
+                    Solte os blocos aqui para criar seu programa
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mensagem"></div>
+    
+    <!-- Lixeira -->
+    <div id="lixeira" title="Arraste blocos aqui para excluir">🗑️</div>
+
+    <!-- Tutorial -->
+    <div id="tutorial" class="tutorial">
+        <div class="tutorial-content">
+            <h3>Como Jogar</h3>
+            <ol>
+                <li>Escolha o nível do labirinto</li>
+                <li>Arraste os blocos da esquerda para a área "Meu Programa"</li>
+                <li>Organize os blocos na ordem que deseja executar</li>
+                <li>Use os blocos de repetição e condicionais para criar sequências</li>
+                <li>Arraste blocos para dentro dos blocos de controle</li>
+                <li>Para excluir um bloco, arraste-o até a lixeira</li>
+                <li>Clique em "Executar" para ver o carro seguir suas instruções</li>
+                <li>O objetivo é chegar na bandeira! 🏁</li>
+            </ol>
+            <div class="tutorial-atalhos">
+                <h4>Atalhos do Teclado:</h4>
+                <ul>
+                    <li>Ctrl/Cmd + Enter: Executar programa</li>
+                    <li>Ctrl/Cmd + P: Pausar execução</li>
+                    <li>Ctrl/Cmd + S: Parar execução</li>
+                    <li>Ctrl/Cmd + N: Novo labirinto</li>
+                </ul>
+            </div>
+            <button id="fechar-tutorial">Entendi!</button>
+        </div>
+    </div>
+
+    <button id="ajuda" class="botao-ajuda">?</button>
+
+    <!-- Scripts -->
+    <script src="blocks.js" type="module"></script>
+    <script src="main.js" type="module"></script>
+</body>
+</html>
+

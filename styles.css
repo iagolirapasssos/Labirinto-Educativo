@@ -1,0 +1,474 @@
+/* styles.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: minmax(250px, auto) 1fr minmax(250px, auto);
+    gap: 20px;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Painéis principais */
+#blocos-disponiveis,
+#labirinto-container,
+#programa-container {
+    position: relative;
+    resize: horizontal;
+    overflow: auto;
+    min-width: 250px;
+    max-width: 800px;
+}
+
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: ew-resize;
+    background: transparent;
+    transition: background 0.3s;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Instruções */
+.instrucao {
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #fff3cd;
+    border-radius: 5px;
+    border-left: 4px solid #ffc107;
+}
+
+.instrucao-programa {
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #e7f3ff;
+    border-radius: 5px;
+    border-left: 4px solid #2196F3;
+}
+
+
+/* Blocos */
+.bloco {
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 5px;
+    cursor: move;
+    color: white;
+    font-weight: bold;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Blocos existentes */
+#programa .bloco-movimento { background-color: #4CAF50; }
+#programa .bloco-controle { background-color: #ff9800; }
+#programa .bloco-repeticao { background-color: #2196F3; }
+#programa .bloco-condicional { background-color: #9c27b0; }
+#programa .bloco-espelhamento { background-color: #E91E63; }
+
+/* Novos blocos SENÃO SE e SENÃO */
+#programa .bloco-senaoSe { background-color: #FF9800; }
+#programa .bloco-senao { background-color: #FF5722; }
+
+/* Novos blocos para verificar paredes */
+#programa .bloco-temParedeDireita { background-color: #795548; }
+#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
+#programa .bloco-temParedeTras { background-color: #5D4037; }
+
+/* Novo bloco Aguardar */
+#programa .bloco-aguardar { background-color: #3F51B5; }
+
+/* Blocos na área disponível */
+#blocos-disponiveis .bloco { opacity: 0.85; }
+
+/* Hover e Dragging */
+.bloco:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.bloco.dragging {
+    opacity: 0.5;
+    transform: scale(1.05);
+}
+
+.bloco-handle {
+    cursor: move;
+    font-size: 20px;
+    padding: 0 5px;
+}
+
+/* Containers */
+.bloco-container {
+    min-height: 50px;
+    padding: 10px;
+    margin: 5px 0 5px 20px;
+    border-left: 2px dashed rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+}
+
+.bloco-container.drag-over {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Placeholder */
+.container-placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding: 10px;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Estilização aprimorada para #nivel-select */
+#nivel-select {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 2px solid #2196F3;
+    background-color: #ffffff;
+    font-size: 16px;
+    color: #333333;
+    appearance: none; /* Remove a seta padrão em alguns navegadores */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path d="M6 8.586L1.707 4.293 3.121 2.879 6 5.758l2.879-2.879 1.414 1.414L6 8.586z" fill="%23333333"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#nivel-select:hover {
+    border-color: #1976D2;
+}
+
+#nivel-select:focus {
+    outline: none;
+    border-color: #1976D2;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+/* Área do programa */
+#programa-container {
+    resize: horizontal;
+    overflow: auto;
+    min-width: 300px;
+    max-width: 800px;
+}
+
+#programa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#resize-handle {
+    cursor: ew-resize;
+    padding: 5px;
+    font-size: 20px;
+}
+
+#programa {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+/* Área de soltura */
+.drop-zone {
+    min-height: 100px;
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #2196F3;
+    background-color: #e3f2fd;
+}
+
+#sequencia-blocos {
+    min-height: 200px;
+}
+
+.programa-placeholder {
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Labirinto */
+#labirinto {
+    position: relative;
+    margin: 20px auto;
+    background: #fff;
+    border: 2px solid #333;
+    overflow: hidden; /* Evitar que o carro apareça fora do labirinto durante transições */
+}
+
+.celula {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parede {
+    background-color: #8b4513;
+}
+
+.caminho {
+    background-color: #ffffff;
+}
+
+/* Atualizar o estilo do carro */
+.carro {
+    position: absolute;
+    width: 30px; /* Ligeiramente menor que a célula */
+    height: 30px;
+    transform-origin: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.carro svg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.chegada {
+    position: absolute;
+    font-size: 24px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+/* Controles */
+#nivel-controles {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#nivel-select {
+    /* Estilização já atualizada anteriormente */
+}
+
+#controles {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#executar { background-color: #4CAF50; color: white; }
+#pausar { background-color: #ff9800; color: white; }
+#parar { background-color: #f44336; color: white; }
+#limpar { background-color: #9e9e9e; color: white; }
+#novo-labirinto { background-color: #2196F3; color: white; }
+#salvar-programa { background-color: #FFC107; color: white; } /* Novo Botão Salvar */
+#abrir-programa { background-color: #00BCD4; color: white; } /* Novo Botão Abrir */
+
+/* Mensagens */
+#mensagem {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+}
+
+.success { background-color: #4CAF50; color: white; }
+.error { background-color: #f44336; color: white; }
+.info { background-color: #2196F3; color: white; }
+
+/* Tutorial */
+.tutorial {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.tutorial-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+}
+
+.tutorial-content h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.tutorial-content ol {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.tutorial-content li {
+    margin: 10px 0;
+    color: #666;
+}
+
+.botao-ajuda {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #2196F3;
+    color: white;
+    font-size: 20px;
+    z-index: 1000;
+}
+
+/* Lixeira */
+#lixeira {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+#lixeira.lixeira-ativa {
+    background-color: #ff4444;
+    transform: scale(1.1);
+}
+
+/* Blocos de espelhamento */
+.bloco-espelhamento {
+    background-color: #E91E63;
+}
+
+/* Container de blocos aninhados */
+.bloco-container {
+    min-height: 50px;
+    padding: 10px;
+    margin: 5px 0 5px 20px;
+    border-left: 2px dashed rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.bloco-container.drag-over {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Melhorar visual dos blocos */
+.bloco-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+}
+
+/* Novos blocos */
+#programa .bloco-senaoSe { background-color: #FF9800; }
+#programa .bloco-senao { background-color: #FF5722; }
+
+/* Novos blocos para verificar paredes */
+#programa .bloco-temParedeDireita { background-color: #795548; }
+#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
+#programa .bloco-temParedeTras { background-color: #5D4037; }
+
+/* Novo bloco Aguardar */
+#programa .bloco-aguardar { background-color: #3F51B5; }
+
+/* Ícones para os blocos de verificar paredes (Opcional) */
+#programa .bloco-temParedeDireita::before,
+#programa .bloco-temParedeEsquerda::before,
+#programa .bloco-temParedeTras::before {
+    content: '🛑'; /* Ícone de parede */
+    margin-right: 5px;
+}
+
+/* Novos blocos de Áudio */
+#programa .bloco-emitirTom { background-color: #FF9800; }
+#programa .bloco-pararTom { background-color: #FF5722; }
+
+/* Ícones para os blocos de Áudio (Opcional) */
+#programa .bloco-emitirTom::before {
+    content: '🔊'; /* Ícone de alto-falante */
+    margin-right: 5px;
+}
+
+#programa .bloco-pararTom::before {
+    content: '🔇'; /* Ícone de alto-falante mudo */
+    margin-right: 5px;
+}
