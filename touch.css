@@ -1,0 +1,230 @@
+/* ... (código anterior permanece o mesmo) */
+
+/* Ajustes para telas pequenas */
+@media (max-width: 768px) {
+    .touch-device .language-select,
+    .touch-device .theme-switch {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+    }
+    
+    .touch-device body {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .touch-device #blocos-disponiveis {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: row;
+        padding: 10px;
+    }
+
+    .touch-device #blocos-disponiveis .grupo-blocos {
+        min-width: 200px;
+        margin-right: 15px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .touch-device #labirinto-container {
+        width: 100%;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .touch-device #labirinto {
+        max-width: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .touch-device #programa-container {
+        width: 100%;
+        max-width: none;
+        height: 300px;
+    }
+
+    .touch-device #controles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .touch-device button {
+        width: 100%;
+        margin: 0;
+    }
+
+    .touch-device #nivel-controles {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .touch-device #nivel-select {
+        width: 100%;
+    }
+
+    .touch-device .bloco {
+        margin: 5px 0;
+        width: 100%;
+    }
+
+    .touch-device .bloco-container {
+        margin-left: 20px;
+        padding: 8px;
+    }
+
+    /* Melhorar estilo do tutorial em telas pequenas */
+    .touch-device .tutorial-content {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .touch-device .tutorial-content ol {
+        padding-left: 20px;
+    }
+
+    .touch-device .tutorial-atalhos {
+        display: none; /* Ocultar atalhos em dispositivos touch */
+    }
+
+    /* Ajustar posição da lixeira e botão de ajuda */
+    .touch-device #lixeira {
+        bottom: 10px;
+        left: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .touch-device #ajuda {
+        bottom: 10px;
+        right: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    /* Melhorar layout dos blocos em tela pequena */
+    .touch-device .bloco-conteudo {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .touch-device .bloco input,
+    .touch-device .bloco select {
+        width: 100%;
+        max-width: 150px;
+    }
+
+    /* Ajustar menu de configurações */
+    .touch-device .config-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-color);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Adicionar suporte para gestos de zoom */
+    .touch-device #labirinto {
+        transform-origin: center;
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Melhorar feedback visual durante o arraste */
+    .touch-device .bloco.dragging {
+        position: fixed;
+        z-index: 1000;
+        width: 90%;
+        max-width: 300px;
+        opacity: 0.9;
+    }
+
+    /* Ajustar espaçamento de blocos aninhados */
+    .touch-device .bloco-container .bloco-container {
+        margin-left: 15px;
+    }
+
+    /* Ajustar mensagens de feedback */
+    .touch-device #mensagem {
+        width: 90%;
+        max-width: none;
+        left: 5%;
+        transform: none;
+        padding: 15px;
+        font-size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 50px;
+    }
+
+    /* Melhorar visualização de placeholders */
+    .touch-device .container-placeholder,
+    .touch-device .programa-placeholder {
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* Ajustar seletores de idioma e tema em modo landscape */
+    @media (orientation: landscape) {
+        .touch-device .config-menu {
+            position: relative;
+            padding: 5px;
+        }
+
+        .touch-device #blocos-disponiveis {
+            height: 150px;
+        }
+
+        .touch-device #programa-container {
+            height: 200px;
+        }
+
+        .touch-device #controles {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Ajustes específicos para telas muito pequenas */
+    @media (max-width: 320px) {
+        .touch-device .bloco {
+            font-size: 14px;
+        }
+
+        .touch-device button {
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        .touch-device #lixeira,
+        .touch-device #ajuda {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+    }
+}

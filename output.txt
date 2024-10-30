@@ -1,0 +1,3662 @@
+blocks.js:
+// blocks.js
+import { i18nThemeManager } from './i18n-theme-manager.js';
+import touchManager from './touch-manager.js';
+
+// Definição dos tipos de blocos
+const TIPOS_BLOCOS = {
+    MOVIMENTO: 'movimento',
+    CONTROLE: 'controle',
+    REPETICAO: 'repeticao',
+    CONDICIONAL: 'condicional',
+    ESPELHAMENTO: 'espelhamento',
+    ESPERAR: 'esperar',
+    AGUARDAR: 'aguardar',
+    VOLTAR_INICIO: 'voltarInicio',
+    VERIFICAR_PAREDE: 'verificarParede',
+    AUDIO: 'audio'
+};
+
+// Configuração dos blocos
+let BLOCOS_CONFIG = [];
+
+function atualizarBlocosConfig() {
+    BLOCOS_CONFIG = [
+        // Blocos de Movimento
+        {
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
+            id: 'frente',
+            texto: i18nThemeManager.translate('blocks.moveForward'),
+            cor: '#4CAF50'
+        },
+        {
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
+            id: 'tras',
+            texto: i18nThemeManager.translate('blocks.moveBackward'),
+            cor: '#4CAF50'
+        },
+        {
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
+            id: 'direita',
+            texto: i18nThemeManager.translate('blocks.turnRight'),
+            cor: '#4CAF50'
+        },
+        {
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
+            id: 'esquerda',
+            texto: i18nThemeManager.translate('blocks.turnLeft'),
+            cor: '#4CAF50'
+        },
+        // Blocos de Espelhamento
+        {
+            tipo: TIPOS_BLOCOS.ESPELHAMENTO,
+            id: 'espelharH',
+            texto: i18nThemeManager.translate('blocks.mirrorH'),
+            cor: '#E91E63'
+        },
+        {
+            tipo: TIPOS_BLOCOS.ESPELHAMENTO,
+            id: 'espelharV',
+            texto: i18nThemeManager.translate('blocks.mirrorV'),
+            cor: '#E91E63'
+        },
+        // Blocos de Repetição
+        {
+            tipo: TIPOS_BLOCOS.REPETICAO,
+            id: 'repetir',
+            texto: i18nThemeManager.translate('blocks.repeat'),
+            cor: '#2196F3',
+            temContainer: true,
+            input: {
+                tipo: 'number',
+                min: 1,
+                max: 10,
+                valor: 2
+            }
+        },
+        // Blocos de Controle
+        {
+            tipo: TIPOS_BLOCOS.CONTROLE,
+            id: 'paraSempre',
+            texto: i18nThemeManager.translate('blocks.forever'),
+            cor: '#ff9800',
+            temContainer: true
+        },
+        // Blocos Condicionais
+        {
+            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            id: 'se',
+            texto: i18nThemeManager.translate('blocks.if'),
+            cor: '#9c27b0',
+            temContainer: true,
+            select: {
+                opcoes: ['caminho livre', 'parede à frente']
+            }
+        },
+        {
+            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            id: 'senaoSe',
+            texto: i18nThemeManager.translate('blocks.elseIf'),
+            cor: '#FF9800',
+            temContainer: true,
+            select: {
+                opcoes: ['caminho livre', 'parede à frente', 'algo mais']
+            },
+            podeAninhar: ['bloco-condicional']
+        },
+        {
+            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            id: 'senao',
+            texto: i18nThemeManager.translate('blocks.else'),
+            cor: '#FF5722',
+            temContainer: true,
+            podeAninhar: ['movimento', 'espelhamento', 'repeticao', 'controle', 'esperar', 'voltarInicio', 'aguardar']
+        },
+        // Verificação de Paredes
+        {
+            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            id: 'temParedeDireita',
+            texto: i18nThemeManager.translate('blocks.checkRightWall'),
+            cor: '#795548',
+            temContainer: true,
+            select: {
+                opcoes: ['sim', 'não']
+            }
+        },
+        {
+            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            id: 'temParedeEsquerda',
+            texto: i18nThemeManager.translate('blocks.checkLeftWall'),
+            cor: '#6D4C41',
+            temContainer: true,
+            select: {
+                opcoes: ['sim', 'não']
+            }
+        },
+        {
+            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            id: 'temParedeTras',
+            texto: i18nThemeManager.translate('blocks.checkBackWall'),
+            cor: '#5D4037',
+            temContainer: true,
+            select: {
+                opcoes: ['sim', 'não']
+            }
+        },
+        // Aguardar e Áudio
+        {
+            tipo: TIPOS_BLOCOS.AGUARDAR,
+            id: 'aguardar',
+            texto: i18nThemeManager.translate('blocks.waitMs'),
+            cor: '#3F51B5',
+            temContainer: false,
+            input: {
+                tipo: 'number',
+                min: 100,
+                max: 10000,
+                valor: 1000
+            }
+        },
+        {
+            tipo: TIPOS_BLOCOS.AUDIO,
+            id: 'emitirTom',
+            texto: i18nThemeManager.translate('blocks.emitTone'),
+            cor: '#FF9800',
+            temContainer: false,
+            input: {
+                tipo: 'number',
+                min: 20,
+                max: 20000,
+                valor: 440
+            }
+        },
+        {
+            tipo: TIPOS_BLOCOS.AUDIO,
+            id: 'pararTom',
+            texto: i18nThemeManager.translate('blocks.stopTone'),
+            cor: '#FF5722',
+            temContainer: false
+        }
+    ];
+}
+
+class GerenciadorBlocos {
+    constructor() {
+        this.blocosDisponiveis = new Set();
+        this.blocoArrastado = null;
+        this.touchSupported = 'ontouchstart' in window;
+        this.isDragging = false;
+        this.draggedElement = null;
+        this.ghostElement = null;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.touchOffsetX = 0;
+        this.touchOffsetY = 0;
+        
+        // Inicializar após carregar traduções
+        i18nThemeManager.initialize().then(() => {
+            atualizarBlocosConfig();
+            this.inicializarBlocos();
+            this.configurarLixeira();
+            this.configurarDragDrop();
+            this.configurarSalvarAbrir();
+            this.configurarTouch();
+        });
+
+        // Listener para mudanças de idioma
+        window.addEventListener('languageChanged', () => {
+            atualizarBlocosConfig();
+            this.atualizarTextosBlocos();
+        });
+    }
+
+    inicializarBlocos() {
+        const container = document.getElementById('blocos-disponiveis');
+        container.innerHTML = '';
+        
+        const sequenciaBlocos = document.getElementById('sequencia-blocos');
+        if (sequenciaBlocos) {
+            this.configurarDropZoneUnica(sequenciaBlocos);
+        }
+        
+        const fragment = document.createDocumentFragment();
+        const blocosPorTipo = BLOCOS_CONFIG.reduce((acc, bloco) => {
+            if (!acc[bloco.tipo]) acc[bloco.tipo] = [];
+            acc[bloco.tipo].push(bloco);
+            return acc;
+        }, {});
+
+        Object.entries(blocosPorTipo).forEach(([tipo, blocos]) => {
+            const grupo = document.createElement('div');
+            grupo.className = 'grupo-blocos';
+            grupo.innerHTML = `<h3>${this.formatarTipoBloco(tipo)}</h3>`;
+
+            const blocoFragment = document.createDocumentFragment();
+            blocos.forEach(config => {
+                const bloco = this.criarBloco(config);
+                blocoFragment.appendChild(bloco);
+                this.blocosDisponiveis.add(config.id);
+            });
+
+            grupo.appendChild(blocoFragment);
+            fragment.appendChild(grupo);
+        });
+
+        container.appendChild(fragment);
+        this.configurarDropZones();
+    }
+
+    formatarTipoBloco(tipo) {
+        return i18nThemeManager.translate(`blocks.${tipo.toLowerCase()}`);
+    }
+
+    atualizarTextosBlocos() {
+        document.querySelectorAll('.bloco').forEach(bloco => {
+            const tipo = bloco.dataset.tipo;
+            const config = BLOCOS_CONFIG.find(b => b.id === tipo);
+            if (config) {
+                const texto = bloco.querySelector('span');
+                if (texto) {
+                    texto.textContent = config.texto;
+                }
+            }
+        });
+    }
+
+    criarBloco(config) {
+        const bloco = document.createElement('div');
+        bloco.className = `bloco bloco-${config.tipo}`;
+        bloco.dataset.tipo = config.id;
+        bloco.draggable = !this.touchSupported;
+        bloco.style.backgroundColor = config.cor;
+
+        const handle = document.createElement('div');
+        handle.className = 'bloco-handle';
+        handle.innerHTML = '⋮';
+        bloco.appendChild(handle);
+
+        const conteudo = document.createElement('div');
+        conteudo.className = 'bloco-conteudo';
+
+        const span = document.createElement('span');
+        span.textContent = config.texto;
+        conteudo.appendChild(span);
+
+        if (config.input) {
+            const input = document.createElement('input');
+            input.type = config.input.tipo;
+            input.min = config.input.min;
+            input.max = config.input.max;
+            input.value = config.input.valor;
+            input.className = 'touch-input';
+            
+            input.addEventListener('mousedown', e => e.stopPropagation());
+            input.addEventListener('touchstart', e => e.stopPropagation());
+            
+            conteudo.appendChild(document.createTextNode(' '));
+            conteudo.appendChild(input);
+            
+            const unidade = this.getUnidade(config.id);
+            if (unidade) {
+                conteudo.appendChild(document.createTextNode(unidade));
+            }
+        }
+
+        if (config.select) {
+            const select = document.createElement('select');
+            select.className = 'touch-select';
+            
+            select.addEventListener('mousedown', e => e.stopPropagation());
+            select.addEventListener('touchstart', e => e.stopPropagation());
+            
+            config.select.opcoes.forEach(opcao => {
+                const option = document.createElement('option');
+                option.value = opcao;
+                option.textContent = opcao;
+                select.appendChild(option);
+            });
+            conteudo.appendChild(document.createTextNode(' '));
+            conteudo.appendChild(select);
+        }
+
+        bloco.appendChild(conteudo);
+
+        if (config.temContainer) {
+            const container = document.createElement('div');
+            container.className = 'bloco-container drop-zone';
+            const placeholder = document.createElement('div');
+            placeholder.className = 'container-placeholder';
+            placeholder.textContent = i18nThemeManager.translate('interface.dragHere');
+            container.appendChild(placeholder);
+            bloco.appendChild(container);
+        }
+
+        return bloco;
+    }
+
+    getUnidade(id) {
+        switch(id) {
+            case 'esperar': return ' ' + i18nThemeManager.translate('blocks.seconds');
+            case 'aguardar': return ' ' + i18nThemeManager.translate('blocks.ms');
+            case 'emitirTom': return ' Hz';
+            case 'repetir': return ' ' + i18nThemeManager.translate('blocks.times');
+            default: return '';
+        }
+    }
+
+    encontrarDropZone(x, y) {
+        const elementos = document.elementsFromPoint(x, y);
+        return elementos.find(el => el.classList.contains('drop-zone'));
+    }
+
+    configurarDropZones() {
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            this.configurarDropZoneUnica(zone);
+        });
+    }
+
+    configurarDropZoneUnica(zone) {
+        if (!zone.dataset.dropzoneConfigured) {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.blocoArrastado) {
+                    this.atualizarDropZones(zone);
+                    e.dataTransfer.dropEffect = this.isBlocoDisponivel(this.blocoArrastado) ? 'copy' : 'move';
+                }
+            });
+
+            zone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.handleDrop(e);
+            });
+
+            zone.dataset.dropzoneConfigured = 'true';
+        }
+    }
+
+    configurarDragDrop() {
+        const blocosDisponiveisContainer = document.getElementById('blocos-disponiveis');
+        const sequenciaBlocos = document.getElementById('sequencia-blocos');
+
+        if (this.touchSupported) {
+            this.configurarTouchDragDrop(blocosDisponiveisContainer, sequenciaBlocos);
+        } else {
+            this.configurarMouseDragDrop(blocosDisponiveisContainer, sequenciaBlocos);
+        }
+
+        this.configurarDropZones();
+
+        // Observer para novas drop zones
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.classList?.contains('drop-zone')) {
+                            this.configurarDropZoneUnica(node);
+                        }
+                        const dropZones = node.querySelectorAll?.('.drop-zone');
+                        if (dropZones) {
+                            dropZones.forEach(zone => this.configurarDropZoneUnica(zone));
+                        }
+                    });
+                }
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    configurarTouch() {
+        if (!this.touchSupported) return;
+
+        touchManager.initialize(document.body, {
+            dragSelector: '.bloco',
+            handleSelector: '.bloco-handle',
+            dropZoneSelector: '.drop-zone',
+            onDragStart: (elemento) => {
+                if (!this.isBlocoDisponivel(elemento)) {
+                    this.blocoArrastado = elemento;
+                    elemento.classList.add('dragging');
+                }
+            },
+            onDrag: (elemento, x, y) => {
+                this.atualizarGhostPosition(x, y);
+            },
+            onDrop: (elemento, destino) => {
+                if (destino.classList.contains('drop-zone')) {
+                    this.handleDrop({ 
+                        preventDefault: () => {}, 
+                        target: destino 
+                    });
+                }
+                elemento.classList.remove('dragging');
+                this.removerGhost();
+            }
+        });
+    }
+
+    configurarTouchDragDrop(blocosDisponiveisContainer, sequenciaBlocos) {
+        let touchTimeout;
+        let longPressActive = false;
+
+        const handleTouchStart = (e) => {
+            if (e.target.closest('input, select')) return;
+
+            const bloco = e.target.closest('.bloco');
+            if (!bloco) return;
+
+            touchTimeout = setTimeout(() => {
+                longPressActive = true;
+                this.iniciarArrasteBlocoTouch(bloco, e.touches[0]);
+            }, 500);
+
+            this.touchStartX = e.touches[0].clientX;
+            this.touchStartY = e.touches[0].clientY;
+        };
+
+        const handleTouchMove = (e) => {
+            if (!longPressActive) {
+                const deltaX = e.touches[0].clientX - this.touchStartX;
+                const deltaY = e.touches[0].clientY - this.touchStartY;
+                if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+                    clearTimeout(touchTimeout);
+                }
+                return;
+            }
+
+            e.preventDefault();
+            this.moverBlocoTouch(e.touches[0]);
+        };
+
+        const handleTouchEnd = (e) => {
+            clearTimeout(touchTimeout);
+            if (!longPressActive) return;
+
+            longPressActive = false;
+            this.finalizarArrasteBlocoTouch(e);
+        };
+
+        blocosDisponiveisContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('touchcancel', handleTouchEnd);
+    }
+
+    configurarMouseDragDrop(blocosDisponiveisContainer, sequenciaBlocos) {
+        blocosDisponiveisContainer.addEventListener('dragstart', this.handleDragStart.bind(this));
+        blocosDisponiveisContainer.addEventListener('dragend', this.handleDragEnd.bind(this));
+        
+        sequenciaBlocos.addEventListener('dragstart', this.handleDragStart.bind(this));
+        sequenciaBlocos.addEventListener('dragend', this.handleDragEnd.bind(this));
+    }
+
+    iniciarArrasteBlocoTouch(bloco, touch) {
+        if (this.isBlocoDisponivel(bloco)) {
+            this.blocoArrastado = this.clonarBloco(bloco);
+        } else {
+            this.blocoArrastado = bloco;
+        }
+
+        const rect = bloco.getBoundingClientRect();
+        this.criarGhost(this.blocoArrastado);
+        
+        this.touchOffsetX = touch.clientX - rect.left;
+        this.touchOffsetY = touch.clientY - rect.top;
+        
+        this.atualizarGhostPosition(touch.clientX - this.touchOffsetX, touch.clientY - this.touchOffsetY);
+        this.blocoArrastado.classList.add('dragging');
+    }
+
+    moverBlocoTouch(touch) {
+        if (!this.blocoArrastado || !this.ghostElement) return;
+        
+        const x = touch.clientX - this.touchOffsetX;
+        const y = touch.clientY - this.touchOffsetY;
+        
+        this.atualizarGhostPosition(x, y);
+        
+        const dropZone = this.encontrarDropZone(touch.clientX, touch.clientY);
+        this.atualizarDropZones(dropZone);
+    }
+
+    finalizarArrasteBlocoTouch(e) {
+        if (!this.blocoArrastado) return;
+
+        const touch = e.changedTouches[0];
+        const dropZone = this.encontrarDropZone(touch.clientX, touch.clientY);
+
+        if (dropZone) {
+            this.handleDrop({ 
+                preventDefault: () => {}, 
+                target: dropZone 
+            });
+        }
+
+        this.blocoArrastado.classList.remove('dragging');
+        this.removerGhost();
+        this.blocoArrastado = null;
+    }
+
+
+    criarGhost(elemento) {
+        if (this.ghostElement) this.removerGhost();
+        
+        this.ghostElement = elemento.cloneNode(true);
+        this.ghostElement.classList.add('ghost');
+        this.ghostElement.style.position = 'fixed';
+        this.ghostElement.style.pointerEvents = 'none';
+        this.ghostElement.style.opacity = '0.8';
+        this.ghostElement.style.zIndex = '9999';
+        document.body.appendChild(this.ghostElement);
+    }
+
+    atualizarGhostPosition(x, y) {
+        if (this.ghostElement) {
+            this.ghostElement.style.left = `${x}px`;
+            this.ghostElement.style.top = `${y}px`;
+        }
+    }
+
+    removerGhost() {
+        if (this.ghostElement) {
+            this.ghostElement.remove();
+            this.ghostElement = null;
+        }
+    }
+
+    configurarLixeira() {
+        const lixeira = document.getElementById('lixeira');
+        if (!lixeira) return;
+
+        const lixeiraHandlers = {
+            ativar: (e) => {
+                e.preventDefault();
+                const blocoArrastado = document.querySelector('.dragging');
+                if (blocoArrastado && !this.isBlocoDisponivel(blocoArrastado)) {
+                    lixeira.classList.add('lixeira-ativa');
+                }
+            },
+            desativar: () => {
+                lixeira.classList.remove('lixeira-ativa');
+            },
+            deletar: (e) => {
+                e.preventDefault();
+                lixeira.classList.remove('lixeira-ativa');
+                
+                const blocoArrastado = document.querySelector('.dragging');
+                if (blocoArrastado && !this.isBlocoDisponivel(blocoArrastado)) {
+                    this.deletarBlocoComAnimacao(blocoArrastado);
+                }
+            }
+        };
+
+        if (this.touchSupported) {
+            lixeira.addEventListener('touchenter', lixeiraHandlers.ativar);
+            lixeira.addEventListener('touchleave', lixeiraHandlers.desativar);
+            lixeira.addEventListener('touchend', lixeiraHandlers.deletar);
+        }
+
+        lixeira.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const blocoArrastado = document.querySelector('.dragging');
+            if (blocoArrastado && !this.isBlocoDisponivel(blocoArrastado)) {
+                lixeira.classList.add('lixeira-ativa');
+                e.dataTransfer.dropEffect = 'move';
+            }
+        });
+
+        lixeira.addEventListener('dragleave', lixeiraHandlers.desativar);
+        lixeira.addEventListener('drop', lixeiraHandlers.deletar);
+    }
+
+    deletarBlocoComAnimacao(bloco) {
+        if (!bloco || this.isBlocoDisponivel(bloco)) return;
+
+        const blocoClone = bloco.cloneNode(true);
+        const rect = bloco.getBoundingClientRect();
+        
+        Object.assign(blocoClone.style, {
+            position: 'fixed',
+            top: rect.top + 'px',
+            left: rect.left + 'px',
+            width: rect.width + 'px',
+            height: rect.height + 'px',
+            margin: '0',
+            transition: 'all 0.2s ease-out',
+            zIndex: '9999'
+        });
+        
+        document.body.appendChild(blocoClone);
+        bloco.remove();
+
+        requestAnimationFrame(() => {
+            const lixeira = document.getElementById('lixeira');
+            const lixeiraRect = lixeira.getBoundingClientRect();
+            
+            Object.assign(blocoClone.style, {
+                transform: 'scale(0.1)',
+                opacity: '0',
+                top: (lixeiraRect.top + lixeiraRect.height/2) + 'px',
+                left: (lixeiraRect.left + lixeiraRect.width/2) + 'px'
+            });
+
+            blocoClone.addEventListener('transitionend', () => {
+                blocoClone.remove();
+                this.verificarContainersVazios();
+            }, { once: true });
+        });
+    }
+
+    verificarContainersVazios() {
+        document.querySelectorAll('.bloco-container').forEach(container => {
+            if (!container.querySelector('.bloco')) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'container-placeholder';
+                placeholder.textContent = i18nThemeManager.translate('interface.dragHere');
+                container.innerHTML = '';
+                container.appendChild(placeholder);
+            }
+        });
+
+        const sequenciaBlocos = document.getElementById('sequencia-blocos');
+        if (sequenciaBlocos && !sequenciaBlocos.querySelector('.bloco')) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'programa-placeholder';
+            placeholder.textContent = i18nThemeManager.translate('interface.dropBlocks');
+            sequenciaBlocos.innerHTML = '';
+            sequenciaBlocos.appendChild(placeholder);
+        }
+    }
+
+    handleDragStart(e) {
+        if (e.target.closest('input, select')) {
+            e.preventDefault();
+            return;
+        }
+
+        const bloco = e.target.closest('.bloco');
+        if (!bloco) return;
+
+        if (this.isBlocoDisponivel(bloco)) {
+            e.dataTransfer.effectAllowed = 'copy';
+        } else {
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        this.blocoArrastado = bloco;
+        bloco.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', bloco.dataset.tipo);
+
+        const ghost = bloco.cloneNode(true);
+        ghost.style.opacity = '0.7';
+        ghost.style.position = 'absolute';
+        ghost.style.left = '-9999px';
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, e.offsetX, e.offsetY);
+        setTimeout(() => ghost.remove(), 0);
+    }
+
+    handleDragEnd(e) {
+        const bloco = e.target.closest('.bloco');
+        if (bloco) {
+            bloco.classList.remove('dragging');
+        }
+        this.blocoArrastado = null;
+        this.atualizarDropZones(null);
+    }
+
+    handleDragOver(e) {
+        e.preventDefault();
+        const dropZone = e.target.closest('.drop-zone');
+        if (dropZone && this.blocoArrastado) {
+            this.atualizarDropZones(dropZone);
+            e.dataTransfer.dropEffect = this.isBlocoDisponivel(this.blocoArrastado) ? 'copy' : 'move';
+        }
+    }
+
+    handleDrop(e) {
+        e.preventDefault();
+        const dropZone = e.target.closest('.drop-zone');
+        if (!dropZone || !this.blocoArrastado) return;
+
+        // Remover classe drag-over
+        dropZone.classList.remove('drag-over');
+
+        // Obter configuração do bloco
+        const tipoBloco = this.blocoArrastado.dataset.tipo;
+        const configBloco = BLOCOS_CONFIG.find(bloco => bloco.id === tipoBloco);
+        if (!configBloco) return;
+
+        // Verificar aninhamento permitido
+        if (!this.verificarAninhamentoPermitido(dropZone, configBloco)) {
+            mostrarMensagem(i18nThemeManager.translate('messages.error.nestedBlock'), 'error');
+            return;
+        }
+
+        try {
+            // Determinar se o bloco vem da área de blocos disponíveis
+            const isFromAvailable = this.isBlocoDisponivel(this.blocoArrastado);
+            let novoBloco;
+
+            if (isFromAvailable) {
+                // Se vier dos blocos disponíveis, criar uma cópia
+                novoBloco = this.clonarBloco(this.blocoArrastado);
+            } else {
+                // Se não, mover o bloco existente
+                novoBloco = this.blocoArrastado;
+            }
+
+            // Remover o placeholder se existir
+            const placeholder = dropZone.querySelector('.container-placeholder, .programa-placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            // Certificar que o bloco não tenha estilos residuais do drag
+            novoBloco.style.position = '';
+            novoBloco.style.left = '';
+            novoBloco.style.top = '';
+            novoBloco.classList.remove('dragging');
+
+            // Adicionar o bloco à drop zone com animação
+            novoBloco.style.opacity = '0';
+            novoBloco.style.transform = 'translateY(-10px)';
+            dropZone.appendChild(novoBloco);
+
+            // Aplicar animação de entrada
+            requestAnimationFrame(() => {
+                novoBloco.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                novoBloco.style.opacity = '1';
+                novoBloco.style.transform = 'translateY(0)';
+            });
+
+            // Se for um bloco aninhável, configurar sua drop zone interna
+            if (configBloco.temContainer) {
+                const container = novoBloco.querySelector('.bloco-container');
+                if (container) {
+                    this.configurarDropZoneUnica(container);
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao soltar bloco:', error);
+            mostrarMensagem(i18nThemeManager.translate('messages.error.unexpected'), 'error');
+        }
+    }
+
+
+    atualizarDropZones(dropZoneAtual) {
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.classList.remove('drag-over');
+        });
+
+        if (dropZoneAtual) {
+            dropZoneAtual.classList.add('drag-over');
+        }
+    }
+
+    inserirBlocoEmDropZone(bloco, dropZone) {
+        const placeholder = dropZone.querySelector('.container-placeholder');
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        bloco.style.opacity = '0';
+        bloco.style.transform = 'translateY(-10px)';
+        bloco.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        
+        dropZone.appendChild(bloco);
+        
+        requestAnimationFrame(() => {
+            bloco.style.opacity = '1';
+            bloco.style.transform = 'translateY(0)';
+        });
+    }
+
+    isBlocoDisponivel(bloco) {
+        return bloco.closest('#blocos-disponiveis') !== null;
+    }
+
+    verificarAninhamentoPermitido(dropZone, configBloco) {
+        const blocoPai = dropZone.closest('.bloco');
+        if (!blocoPai) return true;
+
+        const configPai = BLOCOS_CONFIG.find(b => b.id === blocoPai.dataset.tipo);
+        if (!configPai || !configPai.podeAninhar) return true;
+
+        return configPai.podeAninhar.includes(configBloco.tipo);
+    }
+
+    clonarBloco(blocoOriginal) {
+        const clone = blocoOriginal.cloneNode(true);
+        clone.classList.remove('dragging');
+
+        // Reinicializar inputs e selects
+        clone.querySelectorAll('input').forEach(input => {
+            const originalInput = blocoOriginal.querySelector(`input[type="${input.type}"]`);
+            if (originalInput) {
+                input.value = originalInput.value;
+            }
+        });
+
+        clone.querySelectorAll('select').forEach(select => {
+            const originalSelect = blocoOriginal.querySelector('select');
+            if (originalSelect) {
+                select.value = originalSelect.value;
+            }
+        });
+
+        if (this.touchSupported) {
+            this.configurarTouchParaBloco(clone);
+        }
+
+        return clone;
+    }
+
+    configurarTouchParaBloco(bloco) {
+        const handle = bloco.querySelector('.bloco-handle');
+        if (handle) {
+            handle.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                this.iniciarArrasteBlocoTouch(bloco, e.touches[0]);
+            });
+        }
+
+        bloco.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('touchstart', e => e.stopPropagation());
+            element.addEventListener('mousedown', e => e.stopPropagation());
+        });
+    }
+
+    configurarSalvarAbrir() {
+        const salvarBtn = document.getElementById('salvar-programa');
+        const abrirBtn = document.getElementById('abrir-programa');
+        const inputAbrir = document.getElementById('input-abrir-programa');
+
+        salvarBtn?.addEventListener('click', async () => {
+            const programa = this.serializarPrograma();
+            const blob = new Blob([JSON.stringify(programa, null, 2)], { type: 'application/json' });
+            
+            try {
+                if (window.showSaveFilePicker) {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: 'programa_labirinto.json',
+                        types: [{
+                            description: 'JSON Files',
+                            accept: {'application/json': ['.json']}
+                        }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'programa_labirinto.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }
+                mostrarMensagem(i18nThemeManager.translate('messages.saved'), 'success');
+            } catch (erro) {
+                console.error('Erro ao salvar:', erro);
+                mostrarMensagem(i18nThemeManager.translate('messages.error.saving'), 'error');
+            }
+        });
+
+        abrirBtn?.addEventListener('click', () => {
+            if (window.showOpenFilePicker) {
+                this.abrirProgramaModerno();
+            } else {
+                inputAbrir.click();
+            }
+        });
+
+        inputAbrir?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const programa = JSON.parse(event.target.result);
+                    this.carregarPrograma(programa);
+                    mostrarMensagem(i18nThemeManager.translate('messages.loaded'), 'success');
+                } catch (erro) {
+                    console.error('Erro ao carregar:', erro);
+                    mostrarMensagem(i18nThemeManager.translate('messages.error.loading'), 'error');
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    async abrirProgramaModerno() {
+        try {
+            const [fileHandle] = await window.showOpenFilePicker({
+                types: [{
+                    description: 'JSON Files',
+                    accept: {'application/json': ['.json']}
+                }]
+            });
+            const file = await fileHandle.getFile();
+            const conteudo = await file.text();
+            const programa = JSON.parse(conteudo);
+            this.carregarPrograma(programa);
+            mostrarMensagem(i18nThemeManager.translate('messages.loaded'), 'success');
+        } catch (erro) {
+            console.error('Erro ao abrir:', erro);
+            mostrarMensagem(i18nThemeManager.translate('messages.error.loading'), 'error');
+        }
+    }
+
+    serializarPrograma() {
+        const sequenciaBlocos = document.getElementById('sequencia-blocos');
+        const blocos = Array.from(sequenciaBlocos.children).filter(el => el.classList.contains('bloco'));
+        return blocos.map(bloco => this.serializarBloco(bloco));
+    }
+
+    serializarBloco(bloco) {
+        const tipo = bloco.dataset.tipo;
+        const configBloco = BLOCOS_CONFIG.find(b => b.id === tipo);
+        const blocoData = {
+            tipo: tipo,
+            texto: configBloco.texto,
+            cor: configBloco.cor
+        };
+
+        if (configBloco.input) {
+            const input = bloco.querySelector('input');
+            blocoData.valor = input ? input.value : configBloco.input.valor;
+        }
+
+        if (configBloco.select) {
+            const select = bloco.querySelector('select');
+            blocoData.selecionado = select ? select.value : configBloco.select.opcoes[0];
+        }
+
+        if (configBloco.temContainer) {
+            const container = bloco.querySelector('.bloco-container');
+            const filhos = Array.from(container.children).filter(el => el.classList.contains('bloco'));
+            blocoData.filhos = filhos.map(filho => this.serializarBloco(filho));
+        }
+
+        return blocoData;
+    }
+
+    carregarPrograma(programa) {
+        const sequenciaBlocos = document.getElementById('sequencia-blocos');
+        sequenciaBlocos.innerHTML = '';
+
+        programa.forEach(blocoData => {
+            const bloco = this.criarBlocoDeserializado(blocoData);
+            if (bloco) {
+                sequenciaBlocos.appendChild(bloco);
+            }
+        });
+    }
+
+    criarBlocoDeserializado(blocoData) {
+        const configBloco = BLOCOS_CONFIG.find(b => b.id === blocoData.tipo);
+        if (!configBloco) return null;
+
+        const bloco = this.criarBloco(configBloco);
+
+        if (blocoData.valor) {
+            const input = bloco.querySelector('input');
+            if (input) input.value = blocoData.valor;
+        }
+
+        if (blocoData.selecionado) {
+            const select = bloco.querySelector('select');
+            if (select) select.value = blocoData.selecionado;
+        }
+
+        if (blocoData.filhos && blocoData.filhos.length > 0) {
+            const container = bloco.querySelector('.bloco-container');
+            if (container) {
+                container.innerHTML = '';
+                blocoData.filhos.forEach(filhoData => {
+                    const filho = this.criarBlocoDeserializado(filhoData);
+                    if (filho) container.appendChild(filho);
+                });
+            }
+        }
+
+        return bloco;
+    }
+}
+
+// Função para mostrar mensagens
+function mostrarMensagem(texto, tipo) {
+    const mensagemElement = document.getElementById('mensagem');
+    if (!mensagemElement) return;
+
+    mensagemElement.textContent = texto;
+    mensagemElement.className = tipo;
+    mensagemElement.style.display = 'block';
+
+    mensagemElement.animate([
+        { transform: 'translateY(-20px)', opacity: 0 },
+        { transform: 'translateY(0)', opacity: 1 }
+    ], {
+        duration: 300,
+        easing: 'ease-out'
+    });
+
+    setTimeout(() => {
+        mensagemElement.animate([
+            { transform: 'translateY(0)', opacity: 1 },
+            { transform: 'translateY(-20px)', opacity: 0 }
+        ], {
+            duration: 300,
+            easing: 'ease-in'
+        }).onfinish = () => {
+            mensagemElement.style.display = 'none';
+        };
+    }, 3000);
+}
+
+// Exportar para uso em main.js
+export const gerenciadorBlocos = new GerenciadorBlocos();
+export { mostrarMensagem };
+
+i18n-theme-manager.js:
+// i18n-theme-manager.js
+
+class I18nThemeManager {
+    constructor() {
+        this.currentLanguage = 'pt';
+        this.translations = null;
+        this.themePreference = localStorage.getItem('theme') || 'light';
+        this.initialized = false;
+    }
+
+    async initialize() {
+        try {
+            const response = await fetch('translations.json');
+            this.translations = await response.json();
+            
+            // Initialize language
+            const savedLang = localStorage.getItem('language') || navigator.language.split('-')[0];
+            if (this.translations[savedLang]) {
+                this.currentLanguage = savedLang;
+            }
+            
+            // Setup listeners
+            this.setupLanguageSelector();
+            this.setupThemeToggle();
+            
+            // Initial application
+            this.applyTranslations();
+            this.applyTheme(this.themePreference);
+            
+            this.initialized = true;
+        } catch (error) {
+            console.error('Error initializing I18nThemeManager:', error);
+        }
+    }
+
+    setupLanguageSelector() {
+        const selector = document.getElementById('language-select');
+        if (selector) {
+            selector.value = this.currentLanguage;
+            selector.addEventListener('change', (e) => {
+                this.setLanguage(e.target.value);
+            });
+        }
+    }
+
+    setupThemeToggle() {
+        const toggle = document.getElementById('theme-toggle');
+        if (toggle) {
+            toggle.checked = this.themePreference === 'dark';
+            toggle.addEventListener('change', (e) => {
+                const newTheme = e.target.checked ? 'dark' : 'light';
+                this.applyTheme(newTheme);
+            });
+        }
+    }
+
+    setLanguage(lang) {
+        if (this.translations[lang]) {
+            this.currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            this.applyTranslations();
+            // Dispatch event for components that need to know about language changes
+            window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+        }
+    }
+
+    applyTranslations() {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            const translation = this.getTranslation(key);
+            if (translation) {
+                if (element.tagName === 'INPUT' && element.type === 'submit') {
+                    element.value = translation;
+                } else {
+                    element.textContent = translation;
+                }
+            }
+        });
+    }
+
+    getTranslation(key) {
+        return key.split('.').reduce((obj, i) => obj ? obj[i] : null, this.translations[this.currentLanguage]);
+    }
+
+    translate(key, params = {}) {
+        let text = this.getTranslation(key);
+        if (!text) return key;
+
+        // Replace parameters in the translation string
+        Object.keys(params).forEach(param => {
+            text = text.replace(`{${param}}`, params[param]);
+        });
+
+        return text;
+    }
+
+    applyTheme(theme) {
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        this.themePreference = theme;
+        
+        // Dispatch event for components that need to know about theme changes
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
+    }
+
+    // Helper method to check if touch is available
+    static isTouchDevice() {
+        return (('ontouchstart' in window) ||
+                (navigator.maxTouchPoints > 0) ||
+                (navigator.msMaxTouchPoints > 0));
+    }
+}
+
+export const i18nThemeManager = new I18nThemeManager();
+export default i18nThemeManager;
+
+index.html:
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto de Programação</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="themes.css">
+    <link rel="stylesheet" href="touch.css">
+</head>
+<body>
+    <!-- Language selector -->
+    <div class="language-select">
+        <select id="language-select">
+            <option value="pt">Português</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+        </select>
+    </div>
+
+    <!-- Theme switcher -->
+    <div class="theme-switch">
+        <input type="checkbox" id="theme-toggle">
+        <label for="theme-toggle"></label>
+    </div>
+
+    <div id="blocos-disponiveis">
+        <h2 data-i18n="interface.availableBlocks">Blocos Disponíveis</h2>
+        <p class="instrucao" data-i18n="interface.dragInstructions">Arraste os blocos para a área "Meu Programa" ➡️</p>
+    </div>
+
+    <div id="labirinto-container">
+        <div id="nivel-controles">
+            <select id="nivel-select">
+                <option value="facil" data-i18n="interface.levels.easy">Nível Fácil (8x8)</option>
+                <option value="medio" data-i18n="interface.levels.medium">Nível Médio (12x12)</option>
+                <option value="dificil" data-i18n="interface.levels.hard">Nível Difícil (15x15)</option>
+            </select>
+            <button id="novo-labirinto" data-i18n="interface.newMaze">🔄 Novo Labirinto</button>
+        </div>
+        <div id="labirinto"></div>
+        <div id="controles">
+            <button id="executar" data-i18n="interface.execute">▶ Executar</button>
+            <button id="pausar" disabled data-i18n="interface.pause">⏸ Pausar</button>
+            <button id="parar" disabled data-i18n="interface.stop">⏹ Parar</button>
+            <button id="limpar" data-i18n="interface.clear">🗑 Limpar</button>
+            <button id="salvar-programa" data-i18n="interface.save">💾 Salvar Programa</button>
+            <button id="abrir-programa" data-i18n="interface.open">📂 Abrir Programa</button>
+            <input type="file" id="input-abrir-programa" accept="application/json" style="display: none;">
+        </div>
+    </div>
+
+    <div id="programa-container">
+        <div id="programa-header">
+            <h2 data-i18n="interface.myProgram">Meu Programa</h2>
+            <div id="resize-handle" class="touch-handle">↔</div>
+        </div>
+        <div class="instrucao-programa" data-i18n="interface.dragInstructions">
+            Arraste os blocos para esta área e organize-os na ordem que deseja executar
+        </div>
+        <div id="programa">
+            <div id="sequencia-blocos" class="bloco-container drop-zone">
+                <div class="programa-placeholder" data-i18n="interface.dropBlocks">
+                    Solte os blocos aqui para criar seu programa
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mensagem"></div>
+    
+    <div id="lixeira" title="Arraste blocos aqui para excluir" class="touch-area">🗑️</div>
+
+    <div id="tutorial" class="tutorial">
+        <div class="tutorial-content">
+            <h3 data-i18n="tutorial.title">Como Jogar</h3>
+            <ol>
+                <li data-i18n="tutorial.steps.0">Escolha o nível do labirinto</li>
+                <li data-i18n="tutorial.steps.1">Arraste os blocos da esquerda para a área "Meu Programa"</li>
+                <li data-i18n="tutorial.steps.2">Organize os blocos na ordem que deseja executar</li>
+                <li data-i18n="tutorial.steps.3">Use os blocos de repetição e condicionais para criar sequências</li>
+                <li data-i18n="tutorial.steps.4">Arraste blocos para dentro dos blocos de controle</li>
+                <li data-i18n="tutorial.steps.5">Para excluir um bloco, arraste-o até a lixeira</li>
+                <li data-i18n="tutorial.steps.6">Clique em "Executar" para ver o carro seguir suas instruções</li>
+                <li data-i18n="tutorial.steps.7">O objetivo é chegar na bandeira! 🏁</li>
+            </ol>
+            <div class="tutorial-atalhos">
+                <h4 data-i18n="tutorial.shortcuts.title">Atalhos do Teclado:</h4>
+                <ul>
+                    <li data-i18n="tutorial.shortcuts.execute">Ctrl/Cmd + Enter: Executar programa</li>
+                    <li data-i18n="tutorial.shortcuts.pause">Ctrl/Cmd + P: Pausar execução</li>
+                    <li data-i18n="tutorial.shortcuts.stop">Ctrl/Cmd + S: Parar execução</li>
+                    <li data-i18n="tutorial.shortcuts.newMaze">Ctrl/Cmd + N: Novo labirinto</li>
+                </ul>
+            </div>
+            <button id="fechar-tutorial" data-i18n="tutorial.understood">Entendi!</button>
+        </div>
+    </div>
+
+    <button id="ajuda" class="botao-ajuda touch-area">?</button>
+
+    <!-- Scripts -->
+    <script src="blocks.js" type="module"></script>
+    <script src="main.js" type="module"></script>
+</body>
+</html>
+
+main.js:
+// main.js
+import { gerenciadorBlocos, mostrarMensagem } from './blocks.js';
+import { i18nThemeManager } from './i18n-theme-manager.js';
+import touchManager from './touch-manager.js';
+
+// Variáveis para controle de áudio
+let oscillator = null;
+let gainNode = null;
+let audioContext = null;
+
+// Configurações iniciais
+const TAMANHO_CELULA = 40;
+const CONFIGURACOES_NIVEL = {
+    facil: { linhas: 8, colunas: 8 },
+    medio: { linhas: 12, colunas: 12 },
+    dificil: { linhas: 15, colunas: 15 }
+};
+
+// Estado do jogo
+const estado = {
+    nivelAtual: 'facil',
+    posicaoAtual: { x: 1, y: 1 },
+    direcaoAtual: 0,
+    executandoPrograma: false,
+    pausado: false,
+    labirintoAtual: null,
+    posicaoChegada: { x: 0, y: 0 },
+    escalaLabirinto: 1,
+    touchStartX: 0,
+    touchStartY: 0,
+    ultimoToque: null,
+    pinchStartDistance: 0
+};
+
+// Elementos DOM
+const elementos = {
+    labirinto: document.getElementById('labirinto'),
+    nivelSelect: document.getElementById('nivel-select'),
+    executarBtn: document.getElementById('executar'),
+    pausarBtn: document.getElementById('pausar'),
+    pararBtn: document.getElementById('parar'),
+    limparBtn: document.getElementById('limpar'),
+    novoLabirintoBtn: document.getElementById('novo-labirinto'),
+    sequenciaBlocos: document.getElementById('sequencia-blocos'),
+    mensagemElement: document.getElementById('mensagem'),
+    programaContainer: document.getElementById('programa-container'),
+    tutorialElement: document.getElementById('tutorial'),
+    botaoAjuda: document.getElementById('ajuda')
+};
+
+// Constantes SVG
+const CARRO_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="25" height="25">
+    <rect x="5" y="15" width="30" height="15" fill="#FF4444" rx="5"/>
+    <rect x="10" y="8" width="20" height="10" fill="#FF4444" rx="3"/>
+    <rect x="12" y="10" width="16" height="6" fill="#87CEEB"/>
+    <circle cx="10" cy="30" r="4" fill="#333"/>
+    <circle cx="30" cy="30" r="4" fill="#333"/>
+</svg>`;
+
+// Detecção de dispositivo touch
+const isTouchDevice = 'ontouchstart' in window || 
+                     navigator.maxTouchPoints > 0 || 
+                     navigator.msMaxTouchPoints > 0;
+
+// Configuração do suporte touch para o labirinto
+function configurarTouchLabirinto() {
+    if (!isTouchDevice) return;
+
+    let ultimoToque = null;
+    let pinchStartDistance = 0;
+    let isPinching = false;
+    let isDragging = false;
+    let lastDragX = 0;
+    let lastDragY = 0;
+
+    elementos.labirinto.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            // Início de pinch zoom
+            isPinching = true;
+            pinchStartDistance = calcularDistanciaToque(e.touches[0], e.touches[1]);
+        } else if (e.touches.length === 1) {
+            // Início de drag
+            isDragging = true;
+            lastDragX = e.touches[0].clientX;
+            lastDragY = e.touches[0].clientY;
+        }
+        ultimoToque = e.touches[0];
+    }, { passive: true });
+
+    elementos.labirinto.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+
+        if (isPinching && e.touches.length === 2) {
+            // Pinch zoom
+            const distanciaAtual = calcularDistanciaToque(e.touches[0], e.touches[1]);
+            const fatorEscala = distanciaAtual / pinchStartDistance;
+            aplicarZoomLabirinto(fatorEscala);
+            pinchStartDistance = distanciaAtual;
+        } else if (isDragging && e.touches.length === 1) {
+            // Pan/drag do labirinto
+            const deltaX = e.touches[0].clientX - lastDragX;
+            const deltaY = e.touches[0].clientY - lastDragY;
+            moverLabirinto(deltaX, deltaY);
+            lastDragX = e.touches[0].clientX;
+            lastDragY = e.touches[0].clientY;
+        }
+        ultimoToque = e.touches[0];
+    }, { passive: false });
+
+    elementos.labirinto.addEventListener('touchend', () => {
+        isPinching = false;
+        isDragging = false;
+    }, { passive: true });
+}
+
+function calcularDistanciaToque(touch1, touch2) {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.hypot(dx, dy);
+}
+
+function aplicarZoomLabirinto(fator) {
+    estado.escalaLabirinto = Math.min(Math.max(estado.escalaLabirinto * fator, 0.5), 2);
+    elementos.labirinto.style.transform = `scale(${estado.escalaLabirinto})`;
+}
+
+function moverLabirinto(deltaX, deltaY) {
+    const rect = elementos.labirinto.getBoundingClientRect();
+    const containerRect = elementos.labirinto.parentElement.getBoundingClientRect();
+    
+    // Calcular os limites de movimento
+    const maxX = (rect.width * estado.escalaLabirinto - containerRect.width) / 2;
+    const maxY = (rect.height * estado.escalaLabirinto - containerRect.height) / 2;
+    
+    // Atualizar posição com limites
+    const novoLeft = Math.min(Math.max(rect.left + deltaX, -maxX), maxX);
+    const novoTop = Math.min(Math.max(rect.top + deltaY, -maxY), maxY);
+    
+    elementos.labirinto.style.left = `${novoLeft}px`;
+    elementos.labirinto.style.top = `${novoTop}px`;
+}
+
+// Funções do labirinto
+function gerarLabirinto() {
+    const config = CONFIGURACOES_NIVEL[estado.nivelAtual];
+    const grid = Array(config.linhas).fill().map(() => Array(config.colunas).fill(1));
+
+    function gerarCaminho(x, y) {
+        grid[y][x] = 0;
+
+        const direcoes = [
+            [0, -2], [2, 0], [0, 2], [-2, 0]
+        ].sort(() => Math.random() - 0.5);
+
+        for (let [dx, dy] of direcoes) {
+            const novoX = x + dx;
+            const novoY = y + dy;
+
+            if (novoX > 0 && novoX < config.colunas - 1 &&
+                novoY > 0 && novoY < config.linhas - 1 &&
+                grid[novoY][novoX] === 1) {
+                grid[y + dy / 2][x + dx / 2] = 0;
+                gerarCaminho(novoX, novoY);
+            }
+        }
+    }
+
+    gerarCaminho(1, 1);
+    return grid;
+}
+
+function desenharLabirinto() {
+    elementos.labirinto.innerHTML = '';
+    estado.labirintoAtual = gerarLabirinto();
+    const config = CONFIGURACOES_NIVEL[estado.nivelAtual];
+
+    elementos.labirinto.style.width = (config.colunas * TAMANHO_CELULA) + 'px';
+    elementos.labirinto.style.height = (config.linhas * TAMANHO_CELULA) + 'px';
+    elementos.labirinto.style.transform = `scale(${estado.escalaLabirinto})`;
+
+    // Criar grid do labirinto
+    const fragment = document.createDocumentFragment();
+    for (let y = 0; y < config.linhas; y++) {
+        for (let x = 0; x < config.colunas; x++) {
+            const cell = document.createElement('div');
+            cell.className = `celula ${estado.labirintoAtual[y][x] === 1 ? 'parede' : 'caminho'}`;
+            cell.style.left = (x * TAMANHO_CELULA) + 'px';
+            cell.style.top = (y * TAMANHO_CELULA) + 'px';
+            
+            if (isTouchDevice) {
+                cell.classList.add('touch-cell');
+            }
+            
+            fragment.appendChild(cell);
+        }
+    }
+
+    // Adicionar carro
+    const carro = document.createElement('div');
+    carro.id = 'carro';
+    carro.className = 'carro' + (isTouchDevice ? ' touch-carro' : '');
+    carro.dataset.espelhadoH = 'false';
+    carro.dataset.espelhadoV = 'false';
+    carro.innerHTML = CARRO_SVG;
+    fragment.appendChild(carro);
+
+    // Encontrar e adicionar chegada
+    const chegadaPos = encontrarChegada();
+    estado.posicaoChegada = { x: chegadaPos.x, y: chegadaPos.y };
+
+    const chegada = document.createElement('div');
+    chegada.className = 'chegada' + (isTouchDevice ? ' touch-chegada' : '');
+    chegada.innerHTML = '🏁';
+    chegada.style.left = (estado.posicaoChegada.x * TAMANHO_CELULA) + 'px';
+    chegada.style.top = (estado.posicaoChegada.y * TAMANHO_CELULA) + 'px';
+    fragment.appendChild(chegada);
+
+    elementos.labirinto.appendChild(fragment);
+    resetarPosicao();
+}
+
+function encontrarChegada() {
+    const config = CONFIGURACOES_NIVEL[estado.nivelAtual];
+    const start = { x: 1, y: 1 };
+    const queue = [start];
+    const visited = Array(config.linhas).fill().map(() => Array(config.colunas).fill(false));
+    visited[start.y][start.x] = true;
+    let farthest = start;
+
+    const direcoes = [
+        { x: 1, y: 0 },   // Direita
+        { x: -1, y: 0 },  // Esquerda
+        { x: 0, y: 1 },   // Baixo
+        { x: 0, y: -1 }   // Cima
+    ];
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+        farthest = current;
+
+        direcoes.forEach(dir => {
+            const newX = current.x + dir.x;
+            const newY = current.y + dir.y;
+
+            if (newX >= 0 && newX < config.colunas && newY >= 0 && newY < config.linhas &&
+                !visited[newY][newX] && estado.labirintoAtual[newY][newX] === 0) {
+                visited[newY][newX] = true;
+                queue.push({ x: newX, y: newY });
+            }
+        });
+    }
+
+    return farthest;
+}
+
+async function moverCarro(direcao) {
+    const direcoes = {
+        0: { x: 1, y: 0 },   // direita
+        1: { x: 0, y: 1 },   // baixo
+        2: { x: -1, y: 0 },  // esquerda
+        3: { x: 0, y: -1 }   // cima
+    };
+    
+    let multiplicador = direcao === 'frente' ? 1 : -1;
+    let novaPosX = estado.posicaoAtual.x + (direcoes[estado.direcaoAtual].x * multiplicador);
+    let novaPosY = estado.posicaoAtual.y + (direcoes[estado.direcaoAtual].y * multiplicador);
+    
+    if (verificarColisao(novaPosX, novaPosY)) {
+        const msg = i18nThemeManager.translate('messages.error.wall');
+        throw new Error(msg);
+    }
+    
+    estado.posicaoAtual.x = novaPosX;
+    estado.posicaoAtual.y = novaPosY;
+    
+    await animarMovimentoCarro();
+}
+
+async function animarMovimentoCarro() {
+    const carro = document.getElementById('carro');
+    if (!carro) return;
+
+    const duracao = 300; // ms
+    const inicio = performance.now();
+    const posInicial = {
+        x: parseFloat(carro.style.left) || (estado.posicaoAtual.x * TAMANHO_CELULA + TAMANHO_CELULA / 2),
+        y: parseFloat(carro.style.top) || (estado.posicaoAtual.y * TAMANHO_CELULA + TAMANHO_CELULA / 2)
+    };
+    const posFinal = {
+        x: estado.posicaoAtual.x * TAMANHO_CELULA + TAMANHO_CELULA / 2,
+        y: estado.posicaoAtual.y * TAMANHO_CELULA + TAMANHO_CELULA / 2
+    };
+
+    return new Promise(resolve => {
+        function animar(tempoAtual) {
+            const tempoDecorrido = tempoAtual - inicio;
+            const progresso = Math.min(tempoDecorrido / duracao, 1);
+            
+            // Função de easing
+            const easeProgresso = 1 - Math.pow(1 - progresso, 3);
+
+            const x = posInicial.x + (posFinal.x - posInicial.x) * easeProgresso;
+            const y = posInicial.y + (posFinal.y - posInicial.y) * easeProgresso;
+
+            carro.style.left = `${x}px`;
+            carro.style.top = `${y}px`;
+
+            if (progresso < 1) {
+                requestAnimationFrame(animar);
+            } else {
+                resolve();
+            }
+        }
+
+        requestAnimationFrame(animar);
+    });
+}
+
+async function girarCarro(direcao) {
+    estado.direcaoAtual = direcao === 'direita' 
+        ? (estado.direcaoAtual + 1) % 4 
+        : (estado.direcaoAtual - 1 + 4) % 4;
+    
+    await animarRotacaoCarro();
+}
+
+async function animarRotacaoCarro() {
+    const carro = document.getElementById('carro');
+    if (!carro) return;
+
+    const duracaoRotacao = 200; // ms
+    const inicio = performance.now();
+    const rotacaoInicial = (estado.direcaoAtual - 1) * 90;
+    const rotacaoFinal = estado.direcaoAtual * 90;
+
+    return new Promise(resolve => {
+        function animarRotacao(tempoAtual) {
+            const tempoDecorrido = tempoAtual - inicio;
+            const progresso = Math.min(tempoDecorrido / duracaoRotacao, 1);
+            
+            // Função de easing
+            const easeProgresso = 1 - Math.pow(1 - progresso, 4);
+            
+            const rotacaoAtual = rotacaoInicial + (rotacaoFinal - rotacaoInicial) * easeProgresso;
+            const escalaX = carro.dataset.espelhadoH === 'true' ? -1 : 1;
+            const escalaY = carro.dataset.espelhadoV === 'true' ? -1 : 1;
+
+            carro.style.transform = `translate(-50%, -50%) rotate(${rotacaoAtual}deg) scale(${escalaX}, ${escalaY})`;
+
+            if (progresso < 1) {
+                requestAnimationFrame(animarRotacao);
+            } else {
+                resolve();
+            }
+        }
+
+        requestAnimationFrame(animarRotacao);
+    });
+}
+
+async function espelharHorizontal() {
+    const carro = document.getElementById('carro');
+    if (!carro) return;
+
+    carro.dataset.espelhadoH = carro.dataset.espelhadoH !== 'true';
+
+    if (estado.direcaoAtual === 0) estado.direcaoAtual = 2;
+    else if (estado.direcaoAtual === 2) estado.direcaoAtual = 0;
+
+    await animarEspelhamento(carro);
+}
+
+async function espelharVertical() {
+    const carro = document.getElementById('carro');
+    if (!carro) return;
+
+    carro.dataset.espelhadoV = carro.dataset.espelhadoV !== 'true';
+
+    if (estado.direcaoAtual === 1) estado.direcaoAtual = 3;
+    else if (estado.direcaoAtual === 3) estado.direcaoAtual = 1;
+
+    await animarEspelhamento(carro);
+}
+
+async function animarEspelhamento(carro) {
+    const duracao = 300;
+    const inicio = performance.now();
+
+    return new Promise(resolve => {
+        function animar(tempoAtual) {
+            const tempoDecorrido = tempoAtual - inicio;
+            const progresso = Math.min(tempoDecorrido / duracao, 1);
+            
+            // Animação de escala com easing
+            const escalaProgresso = Math.sin(progresso * Math.PI);
+            const escalaX = carro.dataset.espelhadoH === 'true' ? -1 : 1;
+            const escalaY = carro.dataset.espelhadoV === 'true' ? -1 : 1;
+            const escalaTemp = 1 - escalaProgresso * 0.2;
+
+            carro.style.transform = `
+                translate(-50%, -50%) 
+                rotate(${estado.direcaoAtual * 90}deg) 
+                scale(${escalaX * escalaTemp}, ${escalaY * escalaTemp})
+            `;
+
+            if (progresso < 1) {
+                requestAnimationFrame(animar);
+            } else {
+                resolve();
+            }
+        }
+
+        requestAnimationFrame(animar);
+    });
+}
+
+// Funções de áudio
+function iniciarAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+async function iniciarAudio(frequencia) {
+    try {
+        iniciarAudioContext();
+        
+        if (oscillator) {
+            const msg = i18nThemeManager.translate('messages.error.audioPlaying');
+            mostrarMensagem(msg, 'error');
+            return;
+        }
+
+        oscillator = audioContext.createOscillator();
+        gainNode = audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequencia, audioContext.currentTime);
+        
+        // Fade in suave
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.1);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+
+        const msg = i18nThemeManager.translate('messages.audio.playing', { frequency: frequencia });
+        mostrarMensagem(msg, 'info');
+    } catch (erro) {
+        console.error('Erro ao iniciar áudio:', erro);
+        const msg = i18nThemeManager.translate('messages.error.audio');
+        mostrarMensagem(msg, 'error');
+    }
+}
+
+async function pararAudio() {
+    if (!oscillator) {
+        const msg = i18nThemeManager.translate('messages.error.noAudio');
+        mostrarMensagem(msg, 'error');
+        return;
+    }
+
+    try {
+        // Fade out suave
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+        
+        setTimeout(() => {
+            oscillator.stop();
+            oscillator.disconnect();
+            gainNode.disconnect();
+            oscillator = null;
+            gainNode = null;
+        }, 100);
+
+        const msg = i18nThemeManager.translate('messages.audio.stopped');
+        mostrarMensagem(msg, 'info');
+    } catch (erro) {
+        console.error('Erro ao parar áudio:', erro);
+        const msg = i18nThemeManager.translate('messages.error.audio');
+        mostrarMensagem(msg, 'error');
+    }
+}
+
+// Execução do programa
+async function executarPrograma() {
+    if (estado.executandoPrograma) return;
+
+    try {
+        estado.executandoPrograma = true;
+        estado.pausado = false;
+        elementos.executarBtn.disabled = true;
+        elementos.pausarBtn.disabled = false;
+        elementos.pararBtn.disabled = false;
+
+        resetarPosicao();
+
+        const blocos = Array.from(elementos.sequenciaBlocos.children)
+            .filter(el => el.classList.contains('bloco'));
+            
+        for (const bloco of blocos) {
+            if (!estado.executandoPrograma || estado.pausado) break;
+            await executarBloco(bloco);
+        }
+
+        if (!estado.pausado) {
+            if (verificarVitoria()) {
+                const msg = i18nThemeManager.translate('messages.victory');
+                mostrarMensagem(msg, 'success');
+                reproduzirSomVitoria();
+            } else {
+                const msg = i18nThemeManager.translate('messages.programComplete');
+                mostrarMensagem(msg, 'success');
+            }
+        }
+    } catch (erro) {
+        console.error('Erro na execução:', erro);
+        mostrarMensagem(erro.message, 'error');
+    } finally {
+        finalizarExecucao();
+    }
+}
+
+async function executarBloco(bloco) {
+    if (!estado.executandoPrograma || estado.pausado) return;
+
+    const tipo = bloco.dataset.tipo;
+
+    try {
+        // Destacar bloco sendo executado
+        bloco.classList.add('executando');
+        
+        switch(tipo) {
+            case 'frente':
+                await moverCarro('frente');
+                break;
+            case 'tras':
+                await moverCarro('tras');
+                break;
+            case 'direita':
+                await girarCarro('direita');
+                break;
+            case 'esquerda':
+                await girarCarro('esquerda');
+                break;
+            case 'espelharH':
+                await espelharHorizontal();
+                break;
+            case 'espelharV':
+                await espelharVertical();
+                break;
+            case 'repetir':
+                const vezes = parseInt(bloco.querySelector('input').value) || 1;
+                const blocosRepetir = Array.from(bloco.querySelector('.bloco-container').children)
+                    .filter(el => el.classList.contains('bloco'));
+                for (let i = 0; i < vezes && estado.executandoPrograma && !estado.pausado; i++) {
+                    for (const blocoInterno of blocosRepetir) {
+                        await executarBloco(blocoInterno);
+                    }
+                }
+                break;
+            case 'se':
+                await executarBlocoCondicional(bloco);
+                break;
+            case 'paraSempre':
+                const blocosSempre = Array.from(bloco.querySelector('.bloco-container').children)
+                    .filter(el => el.classList.contains('bloco'));
+                while (estado.executandoPrograma && !estado.pausado) {
+                    for (const blocoInterno of blocosSempre) {
+                        await executarBloco(blocoInterno);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                break;
+            case 'temParedeDireita':
+            case 'temParedeEsquerda':
+            case 'temParedeTras':
+                await executarCondicionalParede(bloco, tipo.replace('temParede', '').toLowerCase());
+                break;
+            case 'aguardar':
+                const milisegundos = parseInt(bloco.querySelector('input').value) || 1000;
+                const msg = i18nThemeManager.translate('messages.waiting', { ms: milisegundos });
+                mostrarMensagem(msg, 'info');
+                await new Promise(resolve => setTimeout(resolve, milisegundos));
+                break;
+            case 'emitirTom':
+                const freq = parseInt(bloco.querySelector('input').value) || 440;
+                await iniciarAudio(freq);
+                await new Promise(resolve => setTimeout(resolve, 300));
+                break;
+            case 'pararTom':
+                await pararAudio();
+                await new Promise(resolve => setTimeout(resolve, 300));
+                break;
+            default:
+                const msgErro = i18nThemeManager.translate('messages.error.unknownBlock');
+                throw new Error(msgErro);
+        }
+    } finally {
+        bloco.classList.remove('executando');
+    }
+}
+
+// Função auxiliar para verificar paredes específicas
+function verificarParedeEspecifica(direcao) {
+    const direcoes = {
+        0: { x: 1, y: 0 },    // direita
+        1: { x: 0, y: 1 },    // baixo
+        2: { x: -1, y: 0 },   // esquerda
+        3: { x: 0, y: -1 }    // cima
+    };
+
+    let direcaoVerificacao = estado.direcaoAtual;
+
+    switch(direcao) {
+        case 'direita':
+            direcaoVerificacao = (estado.direcaoAtual + 1) % 4;
+            break;
+        case 'esquerda':
+            direcaoVerificacao = (estado.direcaoAtual + 3) % 4;
+            break;
+        case 'tras':
+            direcaoVerificacao = (estado.direcaoAtual + 2) % 4;
+            break;
+    }
+
+    const novaPosX = estado.posicaoAtual.x + direcoes[direcaoVerificacao].x;
+    const novaPosY = estado.posicaoAtual.y + direcoes[direcaoVerificacao].y;
+
+    return verificarColisao(novaPosX, novaPosY);
+}
+
+// Função auxiliar para executar blocos condicionais de parede
+async function executarCondicionalParede(blocoCondicional, direcao) {
+    const temParede = verificarParedeEspecifica(direcao);
+    const opcaoSelecionada = blocoCondicional.querySelector('select').value;
+    const condicaoAtendida = (opcaoSelecionada === 'sim' && temParede) || 
+                            (opcaoSelecionada === 'não' && !temParede);
+
+    if (condicaoAtendida) {
+        const blocosDentro = Array.from(blocoCondicional.querySelector('.bloco-container').children)
+            .filter(el => el.classList.contains('bloco'));
+        
+        for (const blocoInterno of blocosDentro) {
+            await executarBloco(blocoInterno);
+        }
+    }
+}
+async function executarBlocoRepeticao(bloco) {
+    const vezes = parseInt(bloco.querySelector('input').value) || 1;
+    const blocos = Array.from(bloco.querySelector('.bloco-container').children)
+        .filter(el => el.classList.contains('bloco'));
+    
+    for (let i = 0; i < vezes && estado.executandoPrograma && !estado.pausado; i++) {
+        for (const blocoInterno of blocos) {
+            await executarBloco(blocoInterno);
+        }
+    }
+}
+
+async function executarBlocoCondicional(bloco) {
+    const condicao = bloco.querySelector('select').value;
+    if (verificarCondicao(condicao)) {
+        const blocos = Array.from(bloco.querySelector('.bloco-container').children)
+            .filter(el => el.classList.contains('bloco'));
+        
+        for (const blocoInterno of blocos) {
+            await executarBloco(blocoInterno);
+        }
+    }
+}
+
+async function executarBlocoParaSempre(bloco) {
+    const blocos = Array.from(bloco.querySelector('.bloco-container').children)
+        .filter(el => el.classList.contains('bloco'));
+    
+    while (estado.executandoPrograma && !estado.pausado) {
+        for (const blocoInterno of blocos) {
+            await executarBloco(blocoInterno);
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+
+async function executarBlocoAguardar(bloco) {
+    const milisegundos = parseInt(bloco.querySelector('input').value) || 1000;
+    const msg = i18nThemeManager.translate('messages.waiting', { ms: milisegundos });
+    mostrarMensagem(msg, 'info');
+    await new Promise(resolve => setTimeout(resolve, milisegundos));
+}
+
+async function executarBlocoEmitirTom(bloco) {
+    const frequencia = parseInt(bloco.querySelector('input').value) || 440;
+    await iniciarAudio(frequencia);
+}
+
+function verificarVitoria() {
+    return estado.posicaoAtual.x === estado.posicaoChegada.x && 
+           estado.posicaoAtual.y === estado.posicaoChegada.y;
+}
+
+async function reproduzirSomVitoria() {
+    const frequencias = [440, 554.37, 659.25, 880];
+    const duracao = 200;
+
+    for (const freq of frequencias) {
+        await iniciarAudio(freq);
+        await new Promise(resolve => setTimeout(resolve, duracao));
+        await pararAudio();
+    }
+}
+
+function verificarColisao(x, y) {
+    const config = CONFIGURACOES_NIVEL[estado.nivelAtual];
+    if (x < 0 || x >= config.colunas || y < 0 || y >= config.linhas) {
+        return true;
+    }
+    return estado.labirintoAtual[y][x] === 1;
+}
+
+function verificarCondicao(condicao) {
+    const direcoes = {
+        0: { x: 1, y: 0 },
+        1: { x: 0, y: 1 },
+        2: { x: -1, y: 0 },
+        3: { x: 0, y: -1 }
+    };
+
+    const novaPosX = estado.posicaoAtual.x + direcoes[estado.direcaoAtual].x;
+    const novaPosY = estado.posicaoAtual.y + direcoes[estado.direcaoAtual].y;
+
+    switch(condicao) {
+        case 'caminho livre':
+            return !verificarColisao(novaPosX, novaPosY);
+        case 'parede à frente':
+            return verificarColisao(novaPosX, novaPosY);
+        default:
+            return false;
+    }
+}
+
+function resetarPosicao() {
+    estado.posicaoAtual = { x: 1, y: 1 };
+    estado.direcaoAtual = 0;
+    const carro = document.getElementById('carro');
+    if (carro) {
+        // Posição corrigida para o centro da célula livre
+        const centerX = (estado.posicaoAtual.x * TAMANHO_CELULA) + (TAMANHO_CELULA / 2);
+        const centerY = (estado.posicaoAtual.y * TAMANHO_CELULA) + (TAMANHO_CELULA / 2);
+        
+        carro.style.left = `${centerX}px`;
+        carro.style.top = `${centerY}px`;
+        carro.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+        carro.dataset.espelhadoH = 'false';
+        carro.dataset.espelhadoV = 'false';
+    }
+}
+
+function finalizarExecucao() {
+    estado.executandoPrograma = false;
+    estado.pausado = false;
+    elementos.executarBtn.disabled = false;
+    elementos.pausarBtn.disabled = true;
+    elementos.pararBtn.disabled = true;
+}
+
+// Inicialização e Event Listeners
+async function inicializarJogo() {
+    await i18nThemeManager.initialize();
+    
+    // Configurar interface
+    configurarEventListeners();
+    configurarTouchLabirinto();
+    
+    // Iniciar jogo
+    desenharLabirinto();
+    elementos.pausarBtn.disabled = true;
+    elementos.pararBtn.disabled = true;
+}
+
+function configurarEventListeners() {
+    // Controles principais
+    elementos.nivelSelect.addEventListener('change', () => {
+        estado.nivelAtual = elementos.nivelSelect.value;
+        desenharLabirinto();
+    });
+
+    elementos.executarBtn.addEventListener('click', executarPrograma);
+    
+    elementos.pausarBtn.addEventListener('click', () => {
+        estado.pausado = true;
+        elementos.pausarBtn.disabled = true;
+        elementos.executarBtn.disabled = false;
+    });
+
+    elementos.pararBtn.addEventListener('click', () => {
+        estado.executandoPrograma = false;
+        estado.pausado = false;
+        resetarPosicao();
+        finalizarExecucao();
+    });
+
+    elementos.limparBtn.addEventListener('click', () => {
+        elementos.sequenciaBlocos.innerHTML = '';
+        const placeholder = document.createElement('div');
+        placeholder.className = 'programa-placeholder';
+        placeholder.textContent = i18nThemeManager.translate('interface.dropBlocks');
+        elementos.sequenciaBlocos.appendChild(placeholder);
+        resetarPosicao();
+    });
+
+    elementos.novoLabirintoBtn.addEventListener('click', desenharLabirinto);
+
+    // Atalhos de teclado
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key.toLowerCase()) {
+                case 'enter':
+                    e.preventDefault();
+                    if (!elementos.executarBtn.disabled) executarPrograma();
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    if (!elementos.pausarBtn.disabled) elementos.pausarBtn.click();
+                    break;
+                case 's':
+                    e.preventDefault();
+                    if (!elementos.pararBtn.disabled) elementos.pararBtn.click();
+                    break;
+                case 'n':
+                    e.preventDefault();
+                    elementos.novoLabirintoBtn.click();
+                    break;
+            }
+        }
+    });
+
+    // Tutorial
+    elementos.botaoAjuda?.addEventListener('click', () => {
+        elementos.tutorialElement.style.display = 'flex';
+    });
+
+    document.getElementById('fechar-tutorial')?.addEventListener('click', () => {
+        elementos.tutorialElement.style.display = 'none';
+    });
+}
+
+// Prevenção de perda acidental de programa
+window.addEventListener('beforeunload', (e) => {
+    if (elementos.sequenciaBlocos.children.length > 1) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', inicializarJogo);
+
+// Exportações
+export {
+    executarPrograma,
+    resetarPosicao,
+    verificarVitoria,
+    mostrarMensagem
+};
+
+styles.css:
+/* styles.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: minmax(250px, auto) 1fr minmax(250px, auto);
+    gap: 20px;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Painéis principais */
+#blocos-disponiveis,
+#labirinto-container,
+#programa-container {
+    position: relative;
+    resize: horizontal;
+    overflow: auto;
+    min-width: 250px;
+    max-width: 800px;
+}
+
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: ew-resize;
+    background: transparent;
+    transition: background 0.3s;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Instruções */
+.instrucao {
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #fff3cd;
+    border-radius: 5px;
+    border-left: 4px solid #ffc107;
+}
+
+.instrucao-programa {
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #e7f3ff;
+    border-radius: 5px;
+    border-left: 4px solid #2196F3;
+}
+
+
+/* Blocos */
+.bloco {
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 5px;
+    cursor: move;
+    color: white;
+    font-weight: bold;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Blocos existentes */
+#programa .bloco-movimento { background-color: #4CAF50; }
+#programa .bloco-controle { background-color: #ff9800; }
+#programa .bloco-repeticao { background-color: #2196F3; }
+#programa .bloco-condicional { background-color: #9c27b0; }
+#programa .bloco-espelhamento { background-color: #E91E63; }
+
+/* Novos blocos SENÃO SE e SENÃO */
+#programa .bloco-senaoSe { background-color: #FF9800; }
+#programa .bloco-senao { background-color: #FF5722; }
+
+/* Novos blocos para verificar paredes */
+#programa .bloco-temParedeDireita { background-color: #795548; }
+#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
+#programa .bloco-temParedeTras { background-color: #5D4037; }
+
+/* Novo bloco Aguardar */
+#programa .bloco-aguardar { background-color: #3F51B5; }
+
+/* Blocos na área disponível */
+#blocos-disponiveis .bloco { opacity: 0.85; }
+
+/* Hover e Dragging */
+.bloco:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.bloco.dragging {
+    opacity: 0.5;
+    transform: scale(1.05);
+}
+
+.bloco-handle {
+    cursor: move;
+    font-size: 20px;
+    padding: 0 5px;
+}
+
+/* Containers */
+.bloco-container {
+    min-height: 50px;
+    padding: 10px;
+    margin: 5px 0 5px 20px;
+    border-left: 2px dashed rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+}
+
+.bloco-container.drag-over {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Placeholder */
+.container-placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding: 10px;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Estilização aprimorada para #nivel-select */
+#nivel-select {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 2px solid #2196F3;
+    background-color: #ffffff;
+    font-size: 16px;
+    color: #333333;
+    appearance: none; /* Remove a seta padrão em alguns navegadores */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path d="M6 8.586L1.707 4.293 3.121 2.879 6 5.758l2.879-2.879 1.414 1.414L6 8.586z" fill="%23333333"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#nivel-select:hover {
+    border-color: #1976D2;
+}
+
+#nivel-select:focus {
+    outline: none;
+    border-color: #1976D2;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+/* Área do programa */
+#programa-container {
+    resize: horizontal;
+    overflow: auto;
+    min-width: 300px;
+    max-width: 800px;
+}
+
+#programa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#resize-handle {
+    cursor: ew-resize;
+    padding: 5px;
+    font-size: 20px;
+}
+
+#programa {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+/* Área de soltura */
+.drop-zone {
+    min-height: 100px;
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #2196F3;
+    background-color: #e3f2fd;
+}
+
+#sequencia-blocos {
+    min-height: 200px;
+}
+
+.programa-placeholder {
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Labirinto */
+#labirinto {
+    position: relative;
+    margin: 20px auto;
+    background: #fff;
+    border: 2px solid #333;
+    overflow: hidden; /* Evitar que o carro apareça fora do labirinto durante transições */
+}
+
+.celula {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parede {
+    background-color: #8b4513;
+}
+
+.caminho {
+    background-color: #ffffff;
+}
+
+/* Atualizar o estilo do carro */
+.carro {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    transform-origin: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+    transform: translate(-50%, -50%); /* Garante a centralização do elemento */
+}
+
+.carro svg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.chegada {
+    position: absolute;
+    font-size: 24px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+/* Controles */
+#nivel-controles {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#nivel-select {
+    /* Estilização já atualizada anteriormente */
+}
+
+#controles {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#executar { background-color: #4CAF50; color: white; }
+#pausar { background-color: #ff9800; color: white; }
+#parar { background-color: #f44336; color: white; }
+#limpar { background-color: #9e9e9e; color: white; }
+#novo-labirinto { background-color: #2196F3; color: white; }
+#salvar-programa { background-color: #FFC107; color: white; } /* Novo Botão Salvar */
+#abrir-programa { background-color: #00BCD4; color: white; } /* Novo Botão Abrir */
+
+/* Mensagens */
+#mensagem {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+}
+
+.success { background-color: #4CAF50; color: white; }
+.error { background-color: #f44336; color: white; }
+.info { background-color: #2196F3; color: white; }
+
+/* Tutorial */
+.tutorial {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.tutorial-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+}
+
+.tutorial-content h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.tutorial-content ol {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.tutorial-content li {
+    margin: 10px 0;
+    color: #666;
+}
+
+.botao-ajuda {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #2196F3;
+    color: white;
+    font-size: 20px;
+    z-index: 1000;
+}
+
+/* Lixeira */
+#lixeira {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+#lixeira.lixeira-ativa {
+    background-color: #ff4444;
+    transform: scale(1.1);
+}
+
+/* Blocos de espelhamento */
+.bloco-espelhamento {
+    background-color: #E91E63;
+}
+
+/* Container de blocos aninhados */
+.bloco-container {
+    min-height: 50px;
+    padding: 10px;
+    margin: 5px 0 5px 20px;
+    border-left: 2px dashed rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.bloco-container.drag-over {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Melhorar visual dos blocos */
+.bloco-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+}
+
+/* Novos blocos */
+#programa .bloco-senaoSe { background-color: #FF9800; }
+#programa .bloco-senao { background-color: #FF5722; }
+
+/* Novos blocos para verificar paredes */
+#programa .bloco-temParedeDireita { background-color: #795548; }
+#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
+#programa .bloco-temParedeTras { background-color: #5D4037; }
+
+/* Novo bloco Aguardar */
+#programa .bloco-aguardar { background-color: #3F51B5; }
+
+/* Ícones para os blocos de verificar paredes (Opcional) */
+#programa .bloco-temParedeDireita::before,
+#programa .bloco-temParedeEsquerda::before,
+#programa .bloco-temParedeTras::before {
+    content: '🛑'; /* Ícone de parede */
+    margin-right: 5px;
+}
+
+/* Novos blocos de Áudio */
+#programa .bloco-emitirTom { background-color: #FF9800; }
+#programa .bloco-pararTom { background-color: #FF5722; }
+
+/* Ícones para os blocos de Áudio (Opcional) */
+#programa .bloco-emitirTom::before {
+    content: '🔊'; /* Ícone de alto-falante */
+    margin-right: 5px;
+}
+
+#programa .bloco-pararTom::before {
+    content: '🔇'; /* Ícone de alto-falante mudo */
+    margin-right: 5px;
+}
+
+
+themes.css:
+/* Theme variables */
+:root {
+  /* Light theme (default) */
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+  --border-color: #ccc;
+  --block-bg: #fff;
+  --block-text: #fff;
+  --wall-color: #8b4513;
+  --path-color: #ffffff;
+  --tutorial-bg: rgba(0,0,0,0.7);
+  --tutorial-content-bg: white;
+  --tutorial-text: #666;
+  --message-bg: rgba(0,0,0,0.8);
+  --container-bg: #f5f5f5;
+  --placeholder-color: #999;
+  --instruction-bg: #fff3cd;
+  --instruction-border: #ffc107;
+  --program-instruction-bg: #e7f3ff;
+  --program-instruction-border: #2196F3;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #fff;
+  --border-color: #444;
+  --block-bg: #333;
+  --block-text: #fff;
+  --wall-color: #4a3728;
+  --path-color: #2a2a2a;
+  --tutorial-bg: rgba(0,0,0,0.9);
+  --tutorial-content-bg: #333;
+  --tutorial-text: #ccc;
+  --message-bg: rgba(255,255,255,0.9);
+  --container-bg: #2a2a2a;
+  --placeholder-color: #777;
+  --instruction-bg: #2c2618;
+  --instruction-border: #856404;
+  --program-instruction-bg: #1a2634;
+  --program-instruction-border: #0d47a1;
+}
+
+/* Theme switcher styles */
+.theme-switch {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.theme-switch label {
+  cursor: pointer;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 12px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.theme-switch input {
+  display: none;
+}
+
+/* Theme variables */
+:root {
+  /* Light theme (default) */
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+  --border-color: #ccc;
+  --block-bg: #fff;
+  --block-text: #fff;
+  --wall-color: #8b4513;
+  --path-color: #ffffff;
+  --tutorial-bg: rgba(0,0,0,0.7);
+  --tutorial-content-bg: white;
+  --tutorial-text: #666;
+  --message-bg: rgba(0,0,0,0.8);
+  --container-bg: #f5f5f5;
+  --placeholder-color: #999;
+  --instruction-bg: #fff3cd;
+  --instruction-border: #ffc107;
+  --program-instruction-bg: #e7f3ff;
+  --program-instruction-border: #2196F3;
+  --select-bg: #ffffff;
+  --select-text: #333333;
+  --select-border: #2196F3;
+  --button-disabled: rgba(0,0,0,0.3);
+  --maze-border: #333;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #fff;
+  --border-color: #444;
+  --block-bg: #333;
+  --block-text: #fff;
+  --wall-color: #4a3728;
+  --path-color: #2a2a2a;
+  --tutorial-bg: rgba(0,0,0,0.9);
+  --tutorial-content-bg: #333;
+  --tutorial-text: #ccc;
+  --message-bg: rgba(255,255,255,0.9);
+  --container-bg: #2a2a2a;
+  --placeholder-color: #777;
+  --instruction-bg: #2c2618;
+  --instruction-border: #856404;
+  --program-instruction-bg: #1a2634;
+  --program-instruction-border: #0d47a1;
+  --select-bg: #333333;
+  --select-text: #ffffff;
+  --select-border: #1976D2;
+  --button-disabled: rgba(255,255,255,0.3);
+  --maze-border: #666;
+}
+
+/* Theme switcher styles */
+.theme-switch {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.theme-switch label {
+  cursor: pointer;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 12px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.theme-switch input {
+  display: none;
+}
+
+.theme-switch label::after {
+  content: '☀️';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s, content 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.theme-switch input:checked + label {
+  background-color: #666;
+}
+
+.theme-switch input:checked + label::after {
+  transform: translateX(26px);
+  content: '🌙';
+}
+
+/* Language selector styles */
+.language-select {
+  position: fixed;
+  top: 20px;
+  right: 90px;
+  z-index: 1000;
+}
+
+.language-select select {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 2px solid var(--select-border);
+  background-color: var(--select-bg);
+  color: var(--select-text);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.language-select select:hover {
+  border-color: var(--select-border);
+}
+
+/* Apply theme variables to existing elements */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+#labirinto {
+  border-color: var(--maze-border);
+}
+
+.parede {
+  background-color: var(--wall-color);
+}
+
+.caminho {
+  background-color: var(--path-color);
+}
+
+.instrucao {
+  background-color: var(--instruction-bg);
+  border-left-color: var(--instruction-border);
+}
+
+.instrucao-programa {
+  background-color: var(--program-instruction-bg);
+  border-left-color: var(--program-instruction-border);
+}
+
+#programa {
+  background: var(--container-bg);
+}
+
+.programa-placeholder {
+  color: var(--placeholder-color);
+}
+
+button:disabled {
+  background-color: var(--button-disabled);
+}
+
+/* Touch support improvements */
+@media (hover: none) {
+  .bloco {
+    touch-action: none;
+  }
+  
+  .bloco-handle {
+    padding: 10px;  /* Larger touch target */
+  }
+  
+  #lixeira {
+    width: 70px;    /* Larger trash area for touch */
+    height: 70px;
+    font-size: 32px;
+  }
+  
+  .botao-ajuda {
+    width: 50px;    /* Larger help button for touch */
+    height: 50px;
+    font-size: 24px;
+  }
+  
+  button {
+    padding: 12px 24px;  /* Larger buttons for touch */
+    min-height: 44px;    /* Minimum touch target size */
+  }
+  
+  select, input {
+    min-height: 44px;    /* Minimum touch target size */
+  }
+}
+
+/* Nested block improvements */
+.bloco-container .bloco-container {
+  margin-left: 25px;
+  border-left: 3px dashed rgba(255, 255, 255, 0.4);
+}
+
+.bloco-container .bloco {
+  margin: 10px 0;
+}
+
+/* Improve drag visual feedback */
+.bloco-container.drag-over {
+  border-style: solid;
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
+}
+
+.bloco.dragging {
+  opacity: 0.7;
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+touch.css:
+/* ... (código anterior permanece o mesmo) */
+
+/* Ajustes para telas pequenas */
+@media (max-width: 768px) {
+    .touch-device .language-select,
+    .touch-device .theme-switch {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+    }
+    
+    .touch-device body {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .touch-device #blocos-disponiveis {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: row;
+        padding: 10px;
+    }
+
+    .touch-device #blocos-disponiveis .grupo-blocos {
+        min-width: 200px;
+        margin-right: 15px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .touch-device #labirinto-container {
+        width: 100%;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .touch-device #labirinto {
+        max-width: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .touch-device #programa-container {
+        width: 100%;
+        max-width: none;
+        height: 300px;
+    }
+
+    .touch-device #controles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .touch-device button {
+        width: 100%;
+        margin: 0;
+    }
+
+    .touch-device #nivel-controles {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .touch-device #nivel-select {
+        width: 100%;
+    }
+
+    .touch-device .bloco {
+        margin: 5px 0;
+        width: 100%;
+    }
+
+    .touch-device .bloco-container {
+        margin-left: 20px;
+        padding: 8px;
+    }
+
+    /* Melhorar estilo do tutorial em telas pequenas */
+    .touch-device .tutorial-content {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .touch-device .tutorial-content ol {
+        padding-left: 20px;
+    }
+
+    .touch-device .tutorial-atalhos {
+        display: none; /* Ocultar atalhos em dispositivos touch */
+    }
+
+    /* Ajustar posição da lixeira e botão de ajuda */
+    .touch-device #lixeira {
+        bottom: 10px;
+        left: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .touch-device #ajuda {
+        bottom: 10px;
+        right: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    /* Melhorar layout dos blocos em tela pequena */
+    .touch-device .bloco-conteudo {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .touch-device .bloco input,
+    .touch-device .bloco select {
+        width: 100%;
+        max-width: 150px;
+    }
+
+    /* Ajustar menu de configurações */
+    .touch-device .config-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-color);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Adicionar suporte para gestos de zoom */
+    .touch-device #labirinto {
+        transform-origin: center;
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Melhorar feedback visual durante o arraste */
+    .touch-device .bloco.dragging {
+        position: fixed;
+        z-index: 1000;
+        width: 90%;
+        max-width: 300px;
+        opacity: 0.9;
+    }
+
+    /* Ajustar espaçamento de blocos aninhados */
+    .touch-device .bloco-container .bloco-container {
+        margin-left: 15px;
+    }
+
+    /* Ajustar mensagens de feedback */
+    .touch-device #mensagem {
+        width: 90%;
+        max-width: none;
+        left: 5%;
+        transform: none;
+        padding: 15px;
+        font-size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 50px;
+    }
+
+    /* Melhorar visualização de placeholders */
+    .touch-device .container-placeholder,
+    .touch-device .programa-placeholder {
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* Ajustar seletores de idioma e tema em modo landscape */
+    @media (orientation: landscape) {
+        .touch-device .config-menu {
+            position: relative;
+            padding: 5px;
+        }
+
+        .touch-device #blocos-disponiveis {
+            height: 150px;
+        }
+
+        .touch-device #programa-container {
+            height: 200px;
+        }
+
+        .touch-device #controles {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Ajustes específicos para telas muito pequenas */
+    @media (max-width: 320px) {
+        .touch-device .bloco {
+            font-size: 14px;
+        }
+
+        .touch-device button {
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        .touch-device #lixeira,
+        .touch-device #ajuda {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+    }
+}
+
+touch-manager.js:
+// touch-manager.js
+
+export class TouchManager {
+    constructor() {
+        this.draggedElement = null;
+        this.touchOffset = { x: 0, y: 0 };
+        this.lastTouch = null;
+        this.scrolling = false;
+        this.scrollTimeout = null;
+        this.touchStartTime = 0;
+    }
+
+    initialize(container, options = {}) {
+        this.container = container;
+        this.options = {
+            dragSelector: '.bloco',
+            handleSelector: '.bloco-handle',
+            dropZoneSelector: '.drop-zone',
+            onDragStart: null,
+            onDrag: null,
+            onDrop: null,
+            scrollSensitivity: 50,
+            ...options
+        };
+
+        this.setupTouchEvents();
+    }
+
+    setupTouchEvents() {
+        // Prevent default touch behaviors except for inputs and selects
+        this.container.addEventListener('touchstart', (e) => {
+            if (!e.target.closest('input, select')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        this.container.addEventListener('touchstart', this.handleTouchStart.bind(this));
+        this.container.addEventListener('touchmove', this.handleTouchMove.bind(this));
+        this.container.addEventListener('touchend', this.handleTouchEnd.bind(this));
+
+        // Handle scrolling within containers
+        const scrollableContainers = this.container.querySelectorAll('.bloco-container');
+        scrollableContainers.forEach(container => {
+            container.addEventListener('touchmove', (e) => {
+                if (this.scrolling && !this.draggedElement) {
+                    e.stopPropagation();
+                }
+            }, { passive: true });
+        });
+    }
+
+    handleTouchStart(e) {
+        if (e.target.closest('input, select')) return;
+        
+        this.touchStartTime = Date.now();
+        const touch = e.touches[0];
+        this.lastTouch = touch;
+
+        const handle = e.target.closest(this.options.handleSelector);
+        const draggable = e.target.closest(this.options.dragSelector);
+
+        if (handle && draggable) {
+            this.initiateDrag(draggable, touch);
+        } else {
+            // Check if we should start scrolling
+            this.scrolling = true;
+            if (this.scrollTimeout) {
+                clearTimeout(this.scrollTimeout);
+            }
+            this.scrollTimeout = setTimeout(() => {
+                this.scrolling = false;
+            }, 100);
+        }
+    }
+
+    initiateDrag(element, touch) {
+        this.draggedElement = element;
+        const rect = element.getBoundingClientRect();
+        
+        this.touchOffset = {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        };
+
+        element.classList.add('dragging');
+        this.createDragPlaceholder(element);
+
+        if (this.options.onDragStart) {
+            this.options.onDragStart(element);
+        }
+    }
+
+    handleTouchMove(e) {
+        if (!this.draggedElement) return;
+        
+        e.preventDefault();
+        const touch = e.touches[0];
+        this.lastTouch = touch;
+
+        // Update dragged element position
+        const x = touch.clientX - this.touchOffset.x;
+        const y = touch.clientY - this.touchOffset.y;
+
+        this.draggedElement.style.position = 'fixed';
+        this.draggedElement.style.left = `${x}px`;
+        this.draggedElement.style.top = `${y}px`;
+
+        // Find potential drop target
+        const dropTarget = this.findDropTarget(touch);
+        this.updateDropZones(dropTarget);
+
+        // Auto-scroll when near edges
+        this.handleAutoScroll(touch);
+
+        if (this.options.onDrag) {
+            this.options.onDrag(this.draggedElement, x, y);
+        }
+    }
+
+    handleTouchEnd(e) {
+        if (!this.draggedElement) return;
+
+        const touchDuration = Date.now() - this.touchStartTime;
+        const wasQuickTap = touchDuration < 200;
+
+        if (wasQuickTap) {
+            // Handle as a tap/click
+            this.resetDragState();
+            return;
+        }
+
+        // Find final drop target
+        const dropTarget = this.findDropTarget(this.lastTouch);
+        
+        if (dropTarget) {
+            this.completeDrop(dropTarget);
+        }
+
+        this.resetDragState();
+    }
+
+    findDropTarget(touch) {
+        const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+        return elements.find(el => el.matches(this.options.dropZoneSelector));
+    }
+
+    updateDropZones(currentDropTarget) {
+        // Remove highlight from all drop zones
+        document.querySelectorAll(this.options.dropZoneSelector).forEach(zone => {
+            zone.classList.remove('drag-over');
+        });
+
+        // Add highlight to current drop target
+        if (currentDropTarget) {
+            currentDropTarget.classList.add('drag-over');
+        }
+    }
+
+    completeDrop(dropTarget) {
+        // Remove placeholder
+        const placeholder = document.querySelector('.drag-placeholder');
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        // Reset element styles
+        this.draggedElement.style.position = '';
+        this.draggedElement.style.left = '';
+        this.draggedElement.style.top = '';
+        this.draggedElement.classList.remove('dragging');
+
+        // Move element to new container
+        dropTarget.appendChild(this.draggedElement);
+
+        if (this.options.onDrop) {
+            this.options.onDrop(this.draggedElement, dropTarget);
+        }
+    }
+
+    resetDragState() {
+        if (this.draggedElement) {
+            this.draggedElement.classList.remove('dragging');
+            this.draggedElement.style.position = '';
+            this.draggedElement.style.left = '';
+            this.draggedElement.style.top = '';
+        }
+
+        const placeholder = document.querySelector('.drag-placeholder');
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        this.updateDropZones(null);
+        this.draggedElement = null;
+        this.lastTouch = null;
+    }
+
+    createDragPlaceholder(element) {
+        const placeholder = element.cloneNode(true);
+        placeholder.classList.add('drag-placeholder');
+        placeholder.style.opacity = '0.3';
+        placeholder.style.pointerEvents = 'none';
+        element.parentNode.insertBefore(placeholder, element);
+    }
+
+    handleAutoScroll(touch) {
+        const scrollContainers = [
+            document.getElementById('blocos-disponiveis'),
+            document.getElementById('programa')
+        ];
+
+        scrollContainers.forEach(container => {
+            if (!container) return;
+
+            const rect = container.getBoundingClientRect();
+            const sensitivity = this.options.scrollSensitivity;
+
+            if (touch.clientY < rect.top + sensitivity) {
+                // Scroll up
+                container.scrollTop -= 10;
+            } else if (touch.clientY > rect.bottom - sensitivity) {
+                // Scroll down
+                container.scrollTop += 10;
+            }
+        });
+    }
+}
+
+export default new TouchManager();
+
+translations.json:
+{
+  "pt": {
+    "blocks": {
+      "movimento": "Movimentos",
+      "controle": "Controle",
+      "repeticao": "Repetição",
+      "condicional": "Condicionais", 
+      "espelhamento": "Espelhamento",
+      "esperar": "Esperar",
+      "aguardar": "Aguardar",
+      "voltarInicio": "Voltar ao Início",
+      "verificarParede": "Verificar Paredes",
+      "audio": "Áudio",
+      "moveForward": "Andar para Frente",
+      "moveBackward": "Andar para Trás",
+      "turnRight": "Virar à Direita",
+      "turnLeft": "Virar à Esquerda",
+      "mirrorH": "Espelhar Horizontal",
+      "mirrorV": "Espelhar Vertical",
+      "repeat": "Repetir",
+      "forever": "Para Sempre",
+      "if": "Se",
+      "elseIf": "SENÃO SE",
+      "else": "SENÃO",
+      "waitSeconds": "Esperar segundos",
+      "waitMs": "Aguardar ms",
+      "checkRightWall": "Tem Parede Direita",
+      "checkLeftWall": "Tem Parede Esquerda",
+      "checkBackWall": "Tem Parede Trás",
+      "emitTone": "Emitir Tom de X Hz",
+      "stopTone": "Parar Tom",
+      "seconds": "segundos",
+      "ms": "ms",
+      "times": "vezes"
+    },
+    "interface": {
+      "availableBlocks": "Blocos Disponíveis",
+      "dragInstructions": "Arraste os blocos para a área \"Meu Programa\" ➡️",
+      "myProgram": "Meu Programa",
+      "dragHere": "Arraste blocos aqui",
+      "dropBlocks": "Solte os blocos aqui para criar seu programa",
+      "execute": "▶ Executar",
+      "pause": "⏸ Pausar",
+      "stop": "⏹ Parar",
+      "clear": "🗑 Limpar",
+      "save": "💾 Salvar Programa",
+      "open": "📂 Abrir Programa",
+      "newMaze": "🔄 Novo Labirinto",
+      "levels": {
+        "easy": "Nível Fácil (8x8)",
+        "medium": "Nível Médio (12x12)",
+        "hard": "Nível Difícil (15x15)"
+      }
+    },
+    "messages": {
+      "saved": "Programa salvo com sucesso!",
+      "loaded": "Programa carregado com sucesso!",
+      "programComplete": "Programa concluído!",
+      "victory": "🎉 Parabéns! Você chegou ao objetivo!",
+      "waiting": "Aguardando {ms} milissegundos...",
+      "audio": {
+        "playing": "Reproduzindo tom de {frequency} Hz",
+        "stopped": "Tom parado"
+      },
+      "error": {
+        "loading": "Erro ao carregar o programa. Verifique o arquivo.",
+        "saving": "Erro ao salvar o programa.",
+        "browser": "Seu navegador não suporta arrastar e soltar. Por favor, use um navegador mais recente.",
+        "wall": "Oops! O carro bateu em uma parede! 💥",
+        "unexpected": "Ocorreu um erro inesperado. Tente novamente.",
+        "unknownBlock": "Bloco desconhecido detectado!",
+        "nestedBlock": "Não é possível aninhar este tipo de bloco aqui.",
+        "audioPlaying": "Já existe um tom sendo reproduzido.",
+        "noAudio": "Nenhum tom está sendo reproduzido.",
+        "audio": "Erro ao manipular áudio."
+      }
+    },
+    "tutorial": {
+      "title": "Como Jogar",
+      "steps": [
+        "Escolha o nível do labirinto",
+        "Arraste os blocos da esquerda para a área \"Meu Programa\"",
+        "Organize os blocos na ordem que deseja executar",
+        "Use os blocos de repetição e condicionais para criar sequências",
+        "Arraste blocos para dentro dos blocos de controle",
+        "Para excluir um bloco, arraste-o até a lixeira",
+        "Clique em \"Executar\" para ver o carro seguir suas instruções",
+        "O objetivo é chegar na bandeira! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Atalhos do Teclado:",
+        "execute": "Ctrl/Cmd + Enter: Executar programa",
+        "pause": "Ctrl/Cmd + P: Pausar execução", 
+        "stop": "Ctrl/Cmd + S: Parar execução",
+        "newMaze": "Ctrl/Cmd + N: Novo labirinto"
+      },
+      "understood": "Entendi!"
+    }
+  },
+  "en": {
+    "blocks": {
+      "movement": "Movements",
+      "control": "Control",
+      "repetition": "Repetition",
+      "conditional": "Conditionals",
+      "mirroring": "Mirroring",
+      "wait": "Wait",
+      "await": "Await",
+      "returnToStart": "Return to Start",
+      "checkWall": "Check Walls",
+      "moveForward": "Move Forward",
+      "moveBackward": "Move Backward",
+      "turnRight": "Turn Right",
+      "turnLeft": "Turn Left",
+      "mirrorH": "Mirror Horizontal",
+      "mirrorV": "Mirror Vertical",
+      "repeat": "Repeat",
+      "forever": "Forever",
+      "if": "If",
+      "elseIf": "ELSE IF",
+      "else": "ELSE",
+      "waitSeconds": "Wait seconds",
+      "waitMs": "Wait ms",
+      "checkRightWall": "Right Wall",
+      "checkLeftWall": "Left Wall",
+      "checkBackWall": "Back Wall",
+      "emitTone": "Emit Tone X Hz",
+      "stopTone": "Stop Tone"
+    },
+    "interface": {
+      "availableBlocks": "Available Blocks",
+      "dragInstructions": "Drag blocks to \"My Program\" area ➡️",
+      "myProgram": "My Program",
+      "dragHere": "Drag blocks here",
+      "dropBlocks": "Drop blocks here to create your program",
+      "execute": "▶ Execute",
+      "pause": "⏸ Pause",
+      "stop": "⏹ Stop",
+      "clear": "🗑 Clear",
+      "save": "💾 Save Program",
+      "open": "📂 Open Program",
+      "newMaze": "🔄 New Maze",
+      "levels": {
+        "easy": "Easy Level (8x8)",
+        "medium": "Medium Level (12x12)",
+        "hard": "Hard Level (15x15)"
+      }
+    },
+    "tutorial": {
+      "title": "How to Play",
+      "steps": [
+        "Choose the maze level",
+        "Drag blocks from the left to \"My Program\" area",
+        "Arrange blocks in the order you want to execute",
+        "Use repetition and conditional blocks to create sequences",
+        "Drag blocks inside control blocks",
+        "To delete a block, drag it to the trash",
+        "Click \"Execute\" to see the car follow your instructions",
+        "The goal is to reach the flag! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Keyboard Shortcuts:",
+        "execute": "Ctrl/Cmd + Enter: Execute program",
+        "pause": "Ctrl/Cmd + P: Pause execution",
+        "stop": "Ctrl/Cmd + S: Stop execution",
+        "newMaze": "Ctrl/Cmd + N: New maze"
+      },
+      "understood": "Got it!"
+    },
+    "messages": {
+      "saved": "Program saved successfully!",
+      "loaded": "Program loaded successfully!",
+      "error": {
+        "loading": "Error loading program. Check the file.",
+        "browser": "Your browser doesn't support drag and drop. Please use a newer browser.",
+        "wall": "Oops! The car hit a wall! 💥",
+        "unexpected": "An unexpected error occurred. Please try again."
+      }
+    }
+  },
+  "es": {
+    "blocks": {
+      "movement": "Movimientos",
+      "control": "Control",
+      "repetition": "Repetición",
+      "conditional": "Condicionales",
+      "mirroring": "Espejo",
+      "wait": "Esperar",
+      "await": "Aguardar",
+      "returnToStart": "Volver al Inicio",
+      "checkWall": "Verificar Paredes",
+      "moveForward": "Avanzar",
+      "moveBackward": "Retroceder",
+      "turnRight": "Girar Derecha",
+      "turnLeft": "Girar Izquierda",
+      "mirrorH": "Espejo Horizontal",
+      "mirrorV": "Espejo Vertical",
+      "repeat": "Repetir",
+      "forever": "Para Siempre",
+      "if": "Si",
+      "elseIf": "SINO SI",
+      "else": "SINO",
+      "waitSeconds": "Esperar segundos",
+      "waitMs": "Aguardar ms",
+      "checkRightWall": "Hay Pared Derecha",
+      "checkLeftWall": "Hay Pared Izquierda",
+      "checkBackWall": "Hay Pared Atrás",
+      "emitTone": "Emitir Tono X Hz",
+      "stopTone": "Parar Tono"
+    },
+    "interface": {
+      "availableBlocks": "Bloques Disponibles",
+      "dragInstructions": "Arrastra los bloques al área \"Mi Programa\" ➡️",
+      "myProgram": "Mi Programa",
+      "dragHere": "Arrastra bloques aquí",
+      "dropBlocks": "Suelta los bloques aquí para crear tu programa",
+      "execute": "▶ Ejecutar",
+      "pause": "⏸ Pausar",
+      "stop": "⏹ Parar",
+      "clear": "🗑 Limpiar",
+      "save": "💾 Guardar Programa",
+      "open": "📂 Abrir Programa",
+      "newMaze": "🔄 Nuevo Laberinto",
+      "levels": {
+        "easy": "Nivel Fácil (8x8)",
+        "medium": "Nivel Medio (12x12)",
+        "hard": "Nivel Difícil (15x15)"
+      }
+    },
+    "tutorial": {
+      "title": "Cómo Jugar",
+      "steps": [
+        "Elige el nivel del laberinto",
+        "Arrastra los bloques de la izquierda al área \"Mi Programa\"",
+        "Organiza los bloques en el orden que deseas ejecutar",
+        "Usa bloques de repetición y condicionales para crear secuencias",
+        "Arrastra bloques dentro de los bloques de control",
+        "Para eliminar un bloque, arrástralo a la papelera",
+        "Haz clic en \"Ejecutar\" para ver el carro seguir tus instrucciones",
+        "¡El objetivo es llegar a la bandera! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Atajos de Teclado:",
+        "execute": "Ctrl/Cmd + Enter: Ejecutar programa",
+        "pause": "Ctrl/Cmd + P: Pausar ejecución",
+        "stop": "Ctrl/Cmd + S: Parar ejecución",
+        "newMaze": "Ctrl/Cmd + N: Nuevo laberinto"
+      },
+      "understood": "¡Entendido!"
+    },
+    "messages": {
+      "saved": "¡Programa guardado con éxito!",
+      "loaded": "¡Programa cargado con éxito!",
+      "error": {
+        "loading": "Error al cargar el programa. Verifica el archivo.",
+        "browser": "Tu navegador no soporta arrastrar y soltar. Por favor, usa un navegador más reciente.",
+        "wall": "¡Ups! ¡El carro chocó contra una pared! 💥",
+        "unexpected": "Ocurrió un error inesperado. Por favor, intenta de nuevo."
+      }
+    }
+  }
+}
+

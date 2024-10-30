@@ -1,0 +1,291 @@
+/* Theme variables */
+:root {
+  /* Light theme (default) */
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+  --border-color: #ccc;
+  --block-bg: #fff;
+  --block-text: #fff;
+  --wall-color: #8b4513;
+  --path-color: #ffffff;
+  --tutorial-bg: rgba(0,0,0,0.7);
+  --tutorial-content-bg: white;
+  --tutorial-text: #666;
+  --message-bg: rgba(0,0,0,0.8);
+  --container-bg: #f5f5f5;
+  --placeholder-color: #999;
+  --instruction-bg: #fff3cd;
+  --instruction-border: #ffc107;
+  --program-instruction-bg: #e7f3ff;
+  --program-instruction-border: #2196F3;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #fff;
+  --border-color: #444;
+  --block-bg: #333;
+  --block-text: #fff;
+  --wall-color: #4a3728;
+  --path-color: #2a2a2a;
+  --tutorial-bg: rgba(0,0,0,0.9);
+  --tutorial-content-bg: #333;
+  --tutorial-text: #ccc;
+  --message-bg: rgba(255,255,255,0.9);
+  --container-bg: #2a2a2a;
+  --placeholder-color: #777;
+  --instruction-bg: #2c2618;
+  --instruction-border: #856404;
+  --program-instruction-bg: #1a2634;
+  --program-instruction-border: #0d47a1;
+}
+
+/* Theme switcher styles */
+.theme-switch {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.theme-switch label {
+  cursor: pointer;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 12px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.theme-switch input {
+  display: none;
+}
+
+/* Theme variables */
+:root {
+  /* Light theme (default) */
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+  --border-color: #ccc;
+  --block-bg: #fff;
+  --block-text: #fff;
+  --wall-color: #8b4513;
+  --path-color: #ffffff;
+  --tutorial-bg: rgba(0,0,0,0.7);
+  --tutorial-content-bg: white;
+  --tutorial-text: #666;
+  --message-bg: rgba(0,0,0,0.8);
+  --container-bg: #f5f5f5;
+  --placeholder-color: #999;
+  --instruction-bg: #fff3cd;
+  --instruction-border: #ffc107;
+  --program-instruction-bg: #e7f3ff;
+  --program-instruction-border: #2196F3;
+  --select-bg: #ffffff;
+  --select-text: #333333;
+  --select-border: #2196F3;
+  --button-disabled: rgba(0,0,0,0.3);
+  --maze-border: #333;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #fff;
+  --border-color: #444;
+  --block-bg: #333;
+  --block-text: #fff;
+  --wall-color: #4a3728;
+  --path-color: #2a2a2a;
+  --tutorial-bg: rgba(0,0,0,0.9);
+  --tutorial-content-bg: #333;
+  --tutorial-text: #ccc;
+  --message-bg: rgba(255,255,255,0.9);
+  --container-bg: #2a2a2a;
+  --placeholder-color: #777;
+  --instruction-bg: #2c2618;
+  --instruction-border: #856404;
+  --program-instruction-bg: #1a2634;
+  --program-instruction-border: #0d47a1;
+  --select-bg: #333333;
+  --select-text: #ffffff;
+  --select-border: #1976D2;
+  --button-disabled: rgba(255,255,255,0.3);
+  --maze-border: #666;
+}
+
+/* Theme switcher styles */
+.theme-switch {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.theme-switch label {
+  cursor: pointer;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 12px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.theme-switch input {
+  display: none;
+}
+
+.theme-switch label::after {
+  content: '☀️';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s, content 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.theme-switch input:checked + label {
+  background-color: #666;
+}
+
+.theme-switch input:checked + label::after {
+  transform: translateX(26px);
+  content: '🌙';
+}
+
+/* Language selector styles */
+.language-select {
+  position: fixed;
+  top: 20px;
+  right: 90px;
+  z-index: 1000;
+}
+
+.language-select select {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 2px solid var(--select-border);
+  background-color: var(--select-bg);
+  color: var(--select-text);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.language-select select:hover {
+  border-color: var(--select-border);
+}
+
+/* Apply theme variables to existing elements */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+#labirinto {
+  border-color: var(--maze-border);
+}
+
+.parede {
+  background-color: var(--wall-color);
+}
+
+.caminho {
+  background-color: var(--path-color);
+}
+
+.instrucao {
+  background-color: var(--instruction-bg);
+  border-left-color: var(--instruction-border);
+}
+
+.instrucao-programa {
+  background-color: var(--program-instruction-bg);
+  border-left-color: var(--program-instruction-border);
+}
+
+#programa {
+  background: var(--container-bg);
+}
+
+.programa-placeholder {
+  color: var(--placeholder-color);
+}
+
+button:disabled {
+  background-color: var(--button-disabled);
+}
+
+/* Touch support improvements */
+@media (hover: none) {
+  .bloco {
+    touch-action: none;
+  }
+  
+  .bloco-handle {
+    padding: 10px;  /* Larger touch target */
+  }
+  
+  #lixeira {
+    width: 70px;    /* Larger trash area for touch */
+    height: 70px;
+    font-size: 32px;
+  }
+  
+  .botao-ajuda {
+    width: 50px;    /* Larger help button for touch */
+    height: 50px;
+    font-size: 24px;
+  }
+  
+  button {
+    padding: 12px 24px;  /* Larger buttons for touch */
+    min-height: 44px;    /* Minimum touch target size */
+  }
+  
+  select, input {
+    min-height: 44px;    /* Minimum touch target size */
+  }
+}
+
+/* Nested block improvements */
+.bloco-container .bloco-container {
+  margin-left: 25px;
+  border-left: 3px dashed rgba(255, 255, 255, 0.4);
+}
+
+.bloco-container .bloco {
+  margin: 10px 0;
+}
+
+/* Improve drag visual feedback */
+.bloco-container.drag-over {
+  border-style: solid;
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
+}
+
+.bloco.dragging {
+  opacity: 0.7;
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}

@@ -1,0 +1,262 @@
+{
+  "pt": {
+    "blocks": {
+      "movimento": "Movimentos",
+      "controle": "Controle",
+      "repeticao": "Repetição",
+      "condicional": "Condicionais", 
+      "espelhamento": "Espelhamento",
+      "esperar": "Esperar",
+      "aguardar": "Aguardar",
+      "voltarInicio": "Voltar ao Início",
+      "verificarParede": "Verificar Paredes",
+      "audio": "Áudio",
+      "moveForward": "Andar para Frente",
+      "moveBackward": "Andar para Trás",
+      "turnRight": "Virar à Direita",
+      "turnLeft": "Virar à Esquerda",
+      "mirrorH": "Espelhar Horizontal",
+      "mirrorV": "Espelhar Vertical",
+      "repeat": "Repetir",
+      "forever": "Para Sempre",
+      "if": "Se",
+      "elseIf": "SENÃO SE",
+      "else": "SENÃO",
+      "waitSeconds": "Esperar segundos",
+      "waitMs": "Aguardar ms",
+      "checkRightWall": "Tem Parede Direita",
+      "checkLeftWall": "Tem Parede Esquerda",
+      "checkBackWall": "Tem Parede Trás",
+      "emitTone": "Emitir Tom de X Hz",
+      "stopTone": "Parar Tom",
+      "seconds": "segundos",
+      "ms": "ms",
+      "times": "vezes"
+    },
+    "interface": {
+      "availableBlocks": "Blocos Disponíveis",
+      "dragInstructions": "Arraste os blocos para a área \"Meu Programa\" ➡️",
+      "myProgram": "Meu Programa",
+      "dragHere": "Arraste blocos aqui",
+      "dropBlocks": "Solte os blocos aqui para criar seu programa",
+      "execute": "▶ Executar",
+      "pause": "⏸ Pausar",
+      "stop": "⏹ Parar",
+      "clear": "🗑 Limpar",
+      "save": "💾 Salvar Programa",
+      "open": "📂 Abrir Programa",
+      "newMaze": "🔄 Novo Labirinto",
+      "levels": {
+        "easy": "Nível Fácil (8x8)",
+        "medium": "Nível Médio (12x12)",
+        "hard": "Nível Difícil (15x15)"
+      }
+    },
+    "messages": {
+      "saved": "Programa salvo com sucesso!",
+      "loaded": "Programa carregado com sucesso!",
+      "programComplete": "Programa concluído!",
+      "victory": "🎉 Parabéns! Você chegou ao objetivo!",
+      "waiting": "Aguardando {ms} milissegundos...",
+      "audio": {
+        "playing": "Reproduzindo tom de {frequency} Hz",
+        "stopped": "Tom parado"
+      },
+      "error": {
+        "loading": "Erro ao carregar o programa. Verifique o arquivo.",
+        "saving": "Erro ao salvar o programa.",
+        "browser": "Seu navegador não suporta arrastar e soltar. Por favor, use um navegador mais recente.",
+        "wall": "Oops! O carro bateu em uma parede! 💥",
+        "unexpected": "Ocorreu um erro inesperado. Tente novamente.",
+        "unknownBlock": "Bloco desconhecido detectado!",
+        "nestedBlock": "Não é possível aninhar este tipo de bloco aqui.",
+        "audioPlaying": "Já existe um tom sendo reproduzido.",
+        "noAudio": "Nenhum tom está sendo reproduzido.",
+        "audio": "Erro ao manipular áudio."
+      }
+    },
+    "tutorial": {
+      "title": "Como Jogar",
+      "steps": [
+        "Escolha o nível do labirinto",
+        "Arraste os blocos da esquerda para a área \"Meu Programa\"",
+        "Organize os blocos na ordem que deseja executar",
+        "Use os blocos de repetição e condicionais para criar sequências",
+        "Arraste blocos para dentro dos blocos de controle",
+        "Para excluir um bloco, arraste-o até a lixeira",
+        "Clique em \"Executar\" para ver o carro seguir suas instruções",
+        "O objetivo é chegar na bandeira! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Atalhos do Teclado:",
+        "execute": "Ctrl/Cmd + Enter: Executar programa",
+        "pause": "Ctrl/Cmd + P: Pausar execução", 
+        "stop": "Ctrl/Cmd + S: Parar execução",
+        "newMaze": "Ctrl/Cmd + N: Novo labirinto"
+      },
+      "understood": "Entendi!"
+    }
+  },
+  "en": {
+    "blocks": {
+      "movement": "Movements",
+      "control": "Control",
+      "repetition": "Repetition",
+      "conditional": "Conditionals",
+      "mirroring": "Mirroring",
+      "wait": "Wait",
+      "await": "Await",
+      "returnToStart": "Return to Start",
+      "checkWall": "Check Walls",
+      "moveForward": "Move Forward",
+      "moveBackward": "Move Backward",
+      "turnRight": "Turn Right",
+      "turnLeft": "Turn Left",
+      "mirrorH": "Mirror Horizontal",
+      "mirrorV": "Mirror Vertical",
+      "repeat": "Repeat",
+      "forever": "Forever",
+      "if": "If",
+      "elseIf": "ELSE IF",
+      "else": "ELSE",
+      "waitSeconds": "Wait seconds",
+      "waitMs": "Wait ms",
+      "checkRightWall": "Right Wall",
+      "checkLeftWall": "Left Wall",
+      "checkBackWall": "Back Wall",
+      "emitTone": "Emit Tone X Hz",
+      "stopTone": "Stop Tone"
+    },
+    "interface": {
+      "availableBlocks": "Available Blocks",
+      "dragInstructions": "Drag blocks to \"My Program\" area ➡️",
+      "myProgram": "My Program",
+      "dragHere": "Drag blocks here",
+      "dropBlocks": "Drop blocks here to create your program",
+      "execute": "▶ Execute",
+      "pause": "⏸ Pause",
+      "stop": "⏹ Stop",
+      "clear": "🗑 Clear",
+      "save": "💾 Save Program",
+      "open": "📂 Open Program",
+      "newMaze": "🔄 New Maze",
+      "levels": {
+        "easy": "Easy Level (8x8)",
+        "medium": "Medium Level (12x12)",
+        "hard": "Hard Level (15x15)"
+      }
+    },
+    "tutorial": {
+      "title": "How to Play",
+      "steps": [
+        "Choose the maze level",
+        "Drag blocks from the left to \"My Program\" area",
+        "Arrange blocks in the order you want to execute",
+        "Use repetition and conditional blocks to create sequences",
+        "Drag blocks inside control blocks",
+        "To delete a block, drag it to the trash",
+        "Click \"Execute\" to see the car follow your instructions",
+        "The goal is to reach the flag! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Keyboard Shortcuts:",
+        "execute": "Ctrl/Cmd + Enter: Execute program",
+        "pause": "Ctrl/Cmd + P: Pause execution",
+        "stop": "Ctrl/Cmd + S: Stop execution",
+        "newMaze": "Ctrl/Cmd + N: New maze"
+      },
+      "understood": "Got it!"
+    },
+    "messages": {
+      "saved": "Program saved successfully!",
+      "loaded": "Program loaded successfully!",
+      "error": {
+        "loading": "Error loading program. Check the file.",
+        "browser": "Your browser doesn't support drag and drop. Please use a newer browser.",
+        "wall": "Oops! The car hit a wall! 💥",
+        "unexpected": "An unexpected error occurred. Please try again."
+      }
+    }
+  },
+  "es": {
+    "blocks": {
+      "movement": "Movimientos",
+      "control": "Control",
+      "repetition": "Repetición",
+      "conditional": "Condicionales",
+      "mirroring": "Espejo",
+      "wait": "Esperar",
+      "await": "Aguardar",
+      "returnToStart": "Volver al Inicio",
+      "checkWall": "Verificar Paredes",
+      "moveForward": "Avanzar",
+      "moveBackward": "Retroceder",
+      "turnRight": "Girar Derecha",
+      "turnLeft": "Girar Izquierda",
+      "mirrorH": "Espejo Horizontal",
+      "mirrorV": "Espejo Vertical",
+      "repeat": "Repetir",
+      "forever": "Para Siempre",
+      "if": "Si",
+      "elseIf": "SINO SI",
+      "else": "SINO",
+      "waitSeconds": "Esperar segundos",
+      "waitMs": "Aguardar ms",
+      "checkRightWall": "Hay Pared Derecha",
+      "checkLeftWall": "Hay Pared Izquierda",
+      "checkBackWall": "Hay Pared Atrás",
+      "emitTone": "Emitir Tono X Hz",
+      "stopTone": "Parar Tono"
+    },
+    "interface": {
+      "availableBlocks": "Bloques Disponibles",
+      "dragInstructions": "Arrastra los bloques al área \"Mi Programa\" ➡️",
+      "myProgram": "Mi Programa",
+      "dragHere": "Arrastra bloques aquí",
+      "dropBlocks": "Suelta los bloques aquí para crear tu programa",
+      "execute": "▶ Ejecutar",
+      "pause": "⏸ Pausar",
+      "stop": "⏹ Parar",
+      "clear": "🗑 Limpiar",
+      "save": "💾 Guardar Programa",
+      "open": "📂 Abrir Programa",
+      "newMaze": "🔄 Nuevo Laberinto",
+      "levels": {
+        "easy": "Nivel Fácil (8x8)",
+        "medium": "Nivel Medio (12x12)",
+        "hard": "Nivel Difícil (15x15)"
+      }
+    },
+    "tutorial": {
+      "title": "Cómo Jugar",
+      "steps": [
+        "Elige el nivel del laberinto",
+        "Arrastra los bloques de la izquierda al área \"Mi Programa\"",
+        "Organiza los bloques en el orden que deseas ejecutar",
+        "Usa bloques de repetición y condicionales para crear secuencias",
+        "Arrastra bloques dentro de los bloques de control",
+        "Para eliminar un bloque, arrástralo a la papelera",
+        "Haz clic en \"Ejecutar\" para ver el carro seguir tus instrucciones",
+        "¡El objetivo es llegar a la bandera! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Atajos de Teclado:",
+        "execute": "Ctrl/Cmd + Enter: Ejecutar programa",
+        "pause": "Ctrl/Cmd + P: Pausar ejecución",
+        "stop": "Ctrl/Cmd + S: Parar ejecución",
+        "newMaze": "Ctrl/Cmd + N: Nuevo laberinto"
+      },
+      "understood": "¡Entendido!"
+    },
+    "messages": {
+      "saved": "¡Programa guardado con éxito!",
+      "loaded": "¡Programa cargado con éxito!",
+      "error": {
+        "loading": "Error al cargar el programa. Verifica el archivo.",
+        "browser": "Tu navegador no soporta arrastrar y soltar. Por favor, usa un navegador más reciente.",
+        "wall": "¡Ups! ¡El carro chocó contra una pared! 💥",
+        "unexpected": "Ocurrió un error inesperado. Por favor, intenta de nuevo."
+      }
+    }
+  }
+}

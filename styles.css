@@ -257,11 +257,12 @@ body {
 /* Atualizar o estilo do carro */
 .carro {
     position: absolute;
-    width: 30px; /* Ligeiramente menor que a célula */
+    width: 30px;
     height: 30px;
     transform-origin: center;
     transition: all 0.3s ease;
     z-index: 10;
+    transform: translate(-50%, -50%); /* Garante a centralização do elemento */
 }
 
 .carro svg {
