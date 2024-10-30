@@ -5,16 +5,11 @@ import touchManager from './touch-manager.js';
 
 // Definição dos tipos de blocos
 const TIPOS_BLOCOS = {
-    MOVIMENTO: 'movimento',
-    CONTROLE: 'controle',
-    REPETICAO: 'repeticao',
-    CONDICIONAL: 'condicional',
-    ESPELHAMENTO: 'espelhamento',
-    ESPERAR: 'esperar',
-    AGUARDAR: 'aguardar',
-    VOLTAR_INICIO: 'voltarInicio',
-    VERIFICAR_PAREDE: 'verificarParede',
-    AUDIO: 'audio'
+    LOGICO: 'logico',
+    MOVIMENTO: 'movimento',      // Movimento e espelhamento
+    CONTROLE: 'controle',       // Controle de fluxo (Se, Repetir, Para Sempre)
+    SENSORES: 'sensores',       // Verificações de parede e condições
+    EFEITOS: 'efeitos'         // Áudio e espera
 };
 
 // Configuração dos blocos
@@ -49,20 +44,20 @@ function atualizarBlocosConfig() {
         },
         // Blocos de Espelhamento
         {
-            tipo: TIPOS_BLOCOS.ESPELHAMENTO,
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
             id: 'espelharH',
             texto: i18nThemeManager.translate('blocks.mirrorH'),
             cor: '#E91E63'
         },
         {
-            tipo: TIPOS_BLOCOS.ESPELHAMENTO,
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
             id: 'espelharV',
             texto: i18nThemeManager.translate('blocks.mirrorV'),
             cor: '#E91E63'
         },
         // Blocos de Repetição
         {
-            tipo: TIPOS_BLOCOS.REPETICAO,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'repetir',
             texto: i18nThemeManager.translate('blocks.repeat'),
             cor: '#2196F3',
@@ -84,7 +79,7 @@ function atualizarBlocosConfig() {
         },
         // Blocos Condicionais
         {
-            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'se',
             texto: i18nThemeManager.translate('blocks.if'),
             cor: '#9c27b0',
@@ -94,18 +89,17 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'senaoSe',
             texto: i18nThemeManager.translate('blocks.elseIf'),
             cor: '#FF9800',
             temContainer: true,
             select: {
-                opcoes: ['caminho livre', 'parede à frente', 'algo mais']
-            },
-            podeAninhar: ['bloco-condicional']
+                opcoes: ['caminho livre', 'parede à frente']
+            }
         },
         {
-            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'senao',
             texto: i18nThemeManager.translate('blocks.else'),
             cor: '#FF5722',
@@ -114,7 +108,7 @@ function atualizarBlocosConfig() {
         },
         // Verificação de Paredes
         {
-            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            tipo: TIPOS_BLOCOS.LOGICO,
             id: 'temParedeDireita',
             texto: i18nThemeManager.translate('blocks.checkRightWall'),
             cor: '#795548',
@@ -124,7 +118,7 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            tipo: TIPOS_BLOCOS.LOGICO,
             id: 'temParedeEsquerda',
             texto: i18nThemeManager.translate('blocks.checkLeftWall'),
             cor: '#6D4C41',
@@ -134,7 +128,7 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            tipo: TIPOS_BLOCOS.LOGICO,
             id: 'temParedeTras',
             texto: i18nThemeManager.translate('blocks.checkBackWall'),
             cor: '#5D4037',
@@ -145,7 +139,7 @@ function atualizarBlocosConfig() {
         },
         // Aguardar e Áudio
         {
-            tipo: TIPOS_BLOCOS.AGUARDAR,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'aguardar',
             texto: i18nThemeManager.translate('blocks.waitMs'),
             cor: '#3F51B5',
@@ -158,7 +152,7 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.AUDIO,
+            tipo: TIPOS_BLOCOS.EFEITOS,
             id: 'emitirTom',
             texto: i18nThemeManager.translate('blocks.emitTone'),
             cor: '#FF9800',
@@ -171,13 +165,104 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.AUDIO,
+            tipo: TIPOS_BLOCOS.EFEITOS,
             id: 'pararTom',
             texto: i18nThemeManager.translate('blocks.stopTone'),
             cor: '#FF5722',
             temContainer: false
+        },
+        // Bloco SE lógico
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'seLogico',
+            texto: i18nThemeManager.translate('blocks.logicalIf'),
+            cor: '#9c27b0',
+            temContainer: true,
+            temContainerLogico: true,
+            containerLogicoTitulo: i18nThemeManager.translate('blocks.condition'),
+            temContainerExecucao: true
+        },
+
+        // Operadores Lógicos AND e OR
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'and',
+            texto: 'AND',
+            cor: '#FF5722',
+            temContainer: false,
+            temDoisContainers: true,
+            containerTitulos: ['Condição 1', 'Condição 2']
+        },
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'or',
+            texto: 'OR',
+            cor: '#FF5722',
+            temContainer: false,
+            temDoisContainers: true,
+            containerTitulos: ['Condição 1', 'Condição 2']
+        },
+
+        // Verificadores de Parede Lógicos
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarParedeDireita',
+            texto: i18nThemeManager.translate('blocks.checkWallRight'),
+            cor: '#795548',
+            retornaLogico: true
+        },
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarParedeEsquerda',
+            texto: i18nThemeManager.translate('blocks.checkWallLeft'),
+            cor: '#795548',
+            retornaLogico: true
+        },
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarChegada',
+            texto: i18nThemeManager.translate('blocks.checkFlag'),
+            cor: '#795548',
+            retornaLogico: true
+        },
+        {
+            tipo: TIPOS_BLOCOS.CONTROLE,
+            id: 'pararRobo',
+            texto: i18nThemeManager.translate('blocks.stopRobot'),
+            cor: '#f44336',
+            temContainer: false
         }
     ];
+}
+
+// Move mostrarMensagem outside the class
+function mostrarMensagem(texto, tipo) {
+    const mensagemElement = document.getElementById('mensagem');
+    if (!mensagemElement) return;
+
+    mensagemElement.textContent = texto;
+    mensagemElement.className = tipo;
+    mensagemElement.style.display = 'block';
+
+    mensagemElement.animate([
+        { transform: 'translateY(-20px)', opacity: 0 },
+        { transform: 'translateY(0)', opacity: 1 }
+    ], {
+        duration: 300,
+        easing: 'ease-out'
+    });
+
+    setTimeout(() => {
+        mensagemElement.animate([
+            { transform: 'translateY(0)', opacity: 1 },
+            { transform: 'translateY(-20px)', opacity: 0 }
+        ], {
+            duration: 300,
+            easing: 'ease-in'
+        }).onfinish = () => {
+            mensagemElement.style.display = 'none';
+        };
+    }, 3000);
 }
 
 class GerenciadorBlocos {
@@ -267,6 +352,11 @@ class GerenciadorBlocos {
         const bloco = document.createElement('div');
         bloco.className = `bloco bloco-${config.tipo}`;
         bloco.dataset.tipo = config.id;
+
+        if (config.retornaLogico) {
+            bloco.dataset.retornaLogico = "true";
+        }
+
         bloco.draggable = !this.touchSupported;
         bloco.style.backgroundColor = config.cor;
 
@@ -330,6 +420,42 @@ class GerenciadorBlocos {
             container.appendChild(placeholder);
             bloco.appendChild(container);
         }
+
+        if (config.temContainerLogico) {
+        const containerLogico = document.createElement('div');
+        containerLogico.className = 'bloco-container-logico drop-zone';
+        
+        const titulo = document.createElement('div');
+        titulo.className = 'container-titulo';
+        titulo.textContent = config.containerLogicoTitulo;
+        containerLogico.appendChild(titulo);
+        
+        const placeholder = document.createElement('div');
+        placeholder.className = 'container-placeholder';
+        placeholder.textContent = i18nThemeManager.translate('interface.dropLogicBlocks');
+        containerLogico.appendChild(placeholder);
+        
+        bloco.appendChild(containerLogico);
+    }
+
+    if (config.temDoisContainers) {
+        config.containerTitulos.forEach(titulo => {
+            const container = document.createElement('div');
+            container.className = 'bloco-container-logico drop-zone';
+            
+            const tituloEl = document.createElement('div');
+            tituloEl.className = 'container-titulo';
+            tituloEl.textContent = titulo;
+            container.appendChild(tituloEl);
+            
+            const placeholder = document.createElement('div');
+            placeholder.className = 'container-placeholder';
+            placeholder.textContent = i18nThemeManager.translate('interface.dropLogicBlocks');
+            container.appendChild(placeholder);
+            
+            bloco.appendChild(container);
+        });
+    }
 
         return bloco;
     }
@@ -964,31 +1090,69 @@ class GerenciadorBlocos {
     }
 
     serializarBloco(bloco) {
-        const tipo = bloco.dataset.tipo;
-        const configBloco = BLOCOS_CONFIG.find(b => b.id === tipo);
-        const blocoData = {
-            tipo: tipo,
-            texto: configBloco.texto,
-            cor: configBloco.cor
-        };
+       if (!bloco) return null;
+       const tipo = bloco.dataset.tipo;
+       const configBloco = BLOCOS_CONFIG.find(b => b.id === tipo);
+       
+       if (!configBloco) return null;
 
-        if (configBloco.input) {
-            const input = bloco.querySelector('input');
-            blocoData.valor = input ? input.value : configBloco.input.valor;
-        }
+       const blocoData = {
+           tipo: tipo,
+           texto: configBloco.texto,
+           cor: configBloco.cor
+       };
 
-        if (configBloco.select) {
-            const select = bloco.querySelector('select');
-            blocoData.selecionado = select ? select.value : configBloco.select.opcoes[0];
-        }
+       if (configBloco.input) {
+           const input = bloco.querySelector('input');
+           blocoData.valor = input ? input.value : configBloco.input.valor;
+       }
 
-        if (configBloco.temContainer) {
-            const container = bloco.querySelector('.bloco-container');
-            const filhos = Array.from(container.children).filter(el => el.classList.contains('bloco'));
-            blocoData.filhos = filhos.map(filho => this.serializarBloco(filho));
-        }
+       if (configBloco.select) {
+           const select = bloco.querySelector('select');
+           blocoData.selecionado = select ? select.value : configBloco.select.opcoes[0];
+       }
 
-        return blocoData;
+       if (configBloco.temContainerLogico) {
+           const containerLogico = bloco.querySelector('.bloco-container-logico');
+           if (containerLogico) {
+               const blocosLogicos = Array.from(containerLogico.children)
+                   .filter(el => el.classList.contains('bloco'));
+               blocoData.logica = blocosLogicos.map(b => this.serializarBloco(b))
+                   .filter(b => b !== null);
+           }
+       }
+
+       if (configBloco.temContainerExecucao) {
+           const containerExecucao = bloco.querySelector('.bloco-container:not(.bloco-container-logico)');
+           if (containerExecucao) {
+               const blocosExecucao = Array.from(containerExecucao.children)
+                   .filter(el => el.classList.contains('bloco'));
+               blocoData.execucao = blocosExecucao.map(b => this.serializarBloco(b))
+                   .filter(b => b !== null);
+           }
+       }
+
+       if (configBloco.temDoisContainers) {
+           const containers = bloco.querySelectorAll('.bloco-container-logico');
+           if (containers.length) {
+               blocoData.condicoes = Array.from(containers).map(container => {
+                   const blocoLogico = container.querySelector('.bloco');
+                   return blocoLogico ? this.serializarBloco(blocoLogico) : null;
+               }).filter(b => b !== null);
+           }
+       }
+
+       if (configBloco.temContainer && !configBloco.temContainerExecucao) {
+           const container = bloco.querySelector('.bloco-container');
+           if (container) {
+               const blocos = Array.from(container.children)
+                   .filter(el => el.classList.contains('bloco'));
+               blocoData.filhos = blocos.map(b => this.serializarBloco(b))
+                   .filter(b => b !== null);
+           }
+       }
+
+       return blocoData;
     }
 
     carregarPrograma(programa) {
@@ -996,77 +1160,100 @@ class GerenciadorBlocos {
         sequenciaBlocos.innerHTML = '';
 
         programa.forEach(blocoData => {
-            const bloco = this.criarBlocoDeserializado(blocoData);
-            if (bloco) {
-                sequenciaBlocos.appendChild(bloco);
-            }
-        });
-    }
+                const bloco = this.criarBlocoDeserializado(blocoData);
+                if (bloco) {
+                    sequenciaBlocos.appendChild(bloco);
+                }
+            });
+        }
 
     criarBlocoDeserializado(blocoData) {
-        const configBloco = BLOCOS_CONFIG.find(b => b.id === blocoData.tipo);
+            const configBloco = BLOCOS_CONFIG.find(b => b.id === blocoData.tipo);
         if (!configBloco) return null;
 
         const bloco = this.criarBloco(configBloco);
 
-        if (blocoData.valor) {
+        // Configurar valores de input se existirem
+        if (blocoData.valor && configBloco.input) {
             const input = bloco.querySelector('input');
-            if (input) input.value = blocoData.valor;
+            if (input) {
+                input.value = blocoData.valor;
+            }
         }
 
-        if (blocoData.selecionado) {
+        // Configurar valores de select se existirem
+        if (blocoData.selecionado && configBloco.select) {
             const select = bloco.querySelector('select');
-            if (select) select.value = blocoData.selecionado;
+            if (select) {
+                select.value = blocoData.selecionado;
+            }
         }
 
-        if (blocoData.filhos && blocoData.filhos.length > 0) {
+        // Processar filhos em container padrão
+        if (blocoData.filhos && configBloco.temContainer) {
             const container = bloco.querySelector('.bloco-container');
             if (container) {
-                container.innerHTML = '';
+                container.innerHTML = ''; // Limpar placeholder
                 blocoData.filhos.forEach(filhoData => {
                     const filho = this.criarBlocoDeserializado(filhoData);
-                    if (filho) container.appendChild(filho);
+                    if (filho) {
+                        container.appendChild(filho);
+                    }
                 });
             }
         }
 
-        return bloco;
+        // Processar blocos lógicos
+        if (blocoData.logica && configBloco.temContainerLogico) {
+            const containerLogico = bloco.querySelector('.bloco-container-logico');
+            if (containerLogico) {
+                containerLogico.innerHTML = ''; // Limpar placeholder
+                blocoData.logica.forEach(logicoData => {
+                    const filho = this.criarBlocoDeserializado(logicoData);
+                    if (filho) {
+                        containerLogico.appendChild(filho);
+                    }
+                });
+            }
+        }
+
+        // Processar bloco de execução
+        if (blocoData.execucao && configBloco.temContainerExecucao) {
+            const containerExecucao = bloco.querySelector('.bloco-container:not(.bloco-container-logico)');
+            if (containerExecucao) {
+                containerExecucao.innerHTML = ''; // Limpar placeholder
+                blocoData.execucao.forEach(execData => {
+                    const filho = this.criarBlocoDeserializado(execData);
+                    if (filho) {
+                        containerExecucao.appendChild(filho);
+                    }
+                });
+            }
+        }
+
+        // Processar containers duplos (AND/OR)
+        if (blocoData.condicoes && configBloco.temDoisContainers) {
+            const containers = bloco.querySelectorAll('.bloco-container-logico');
+            blocoData.condicoes.forEach((condicao, index) => {
+                if (condicao && containers[index]) {
+                    containers[index].innerHTML = ''; // Limpar placeholder
+                    const filho = this.criarBlocoDeserializado(condicao);
+                    if (filho) {
+                        containers[index].appendChild(filho);
+                    }
+                }
+            });
+        }
+
+        return bloco;   
     }
-}
-
-// Função para mostrar mensagens
-function mostrarMensagem(texto, tipo) {
-    const mensagemElement = document.getElementById('mensagem');
-    if (!mensagemElement) return;
-
-    mensagemElement.textContent = texto;
-    mensagemElement.className = tipo;
-    mensagemElement.style.display = 'block';
-
-    mensagemElement.animate([
-        { transform: 'translateY(-20px)', opacity: 0 },
-        { transform: 'translateY(0)', opacity: 1 }
-    ], {
-        duration: 300,
-        easing: 'ease-out'
-    });
-
-    setTimeout(() => {
-        mensagemElement.animate([
-            { transform: 'translateY(0)', opacity: 1 },
-            { transform: 'translateY(-20px)', opacity: 0 }
-        ], {
-            duration: 300,
-            easing: 'ease-in'
-        }).onfinish = () => {
-            mensagemElement.style.display = 'none';
-        };
-    }, 3000);
 }
 
 // Exportar para uso em main.js
 export const gerenciadorBlocos = new GerenciadorBlocos();
-export { mostrarMensagem };
+export { mostrarMensagem, BLOCOS_CONFIG };
+
+
 
 i18n-theme-manager.js:
 // i18n-theme-manager.js
@@ -1257,8 +1444,6 @@ index.html:
     </div>
 
     <div id="mensagem"></div>
-    
-    <div id="lixeira" title="Arraste blocos aqui para excluir" class="touch-area">🗑️</div>
 
     <div id="tutorial" class="tutorial">
         <div class="tutorial-content">
@@ -1272,6 +1457,9 @@ index.html:
                 <li data-i18n="tutorial.steps.5">Para excluir um bloco, arraste-o até a lixeira</li>
                 <li data-i18n="tutorial.steps.6">Clique em "Executar" para ver o carro seguir suas instruções</li>
                 <li data-i18n="tutorial.steps.7">O objetivo é chegar na bandeira! 🏁</li>
+                <li data-i18n="tutorial.steps.logical">Use blocos lógicos para criar condições complexas com AND e OR</li>
+                <li data-i18n="tutorial.steps.jsonDrop">Arraste arquivos JSON para a área "Meu Programa" para carregar programas salvos</li>
+
             </ol>
             <div class="tutorial-atalhos">
                 <h4 data-i18n="tutorial.shortcuts.title">Atalhos do Teclado:</h4>
@@ -1286,6 +1474,7 @@ index.html:
         </div>
     </div>
 
+    <div id="lixeira" title="Arraste blocos aqui para excluir" class="touch-area">🗑️</div>
     <button id="ajuda" class="botao-ajuda touch-area">?</button>
 
     <!-- Scripts -->
@@ -1294,9 +1483,33 @@ index.html:
 </body>
 </html>
 
+LICENSE:
+MIT License
+
+Copyright (c) 2024 Iago lira
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
 main.js:
 // main.js
-import { gerenciadorBlocos, mostrarMensagem } from './blocks.js';
+import { gerenciadorBlocos, mostrarMensagem, BLOCOS_CONFIG } from './blocks.js';
 import { i18nThemeManager } from './i18n-theme-manager.js';
 import touchManager from './touch-manager.js';
 
@@ -1819,6 +2032,56 @@ async function executarPrograma() {
     }
 }
 
+async function executarBlocoLogico(bloco) {
+    const tipo = bloco.dataset.tipo;
+    
+    switch(tipo) {
+        case 'and':
+        case 'or':
+            const containers = bloco.querySelectorAll('.bloco-container-logico');
+            const resultados = await Promise.all(Array.from(containers).map(async container => {
+                const blocoLogico = container.querySelector('.bloco');
+                return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+            }));
+            return tipo === 'and' 
+                ? resultados.every(r => r === true)
+                : resultados.some(r => r === true);
+            
+        case 'seLogico':
+            const containerLogico = bloco.querySelector('.bloco-container-logico');
+            const blocoLogico = containerLogico?.querySelector('.bloco');
+            return await avaliarCondicaoLogica(blocoLogico);
+            
+        case 'verificarParedeDireita':
+        case 'verificarParedeEsquerda':
+        case 'verificarParedeTras':
+            const direcao = tipo.replace('verificarParede', '').toLowerCase();
+            return verificarParedeEspecifica(direcao);
+            
+        default:
+            return false;
+    }
+}
+
+async function avaliarAND(bloco) {
+    const containers = bloco.querySelectorAll('.bloco-container-logico');
+    const resultados = await Promise.all(Array.from(containers).map(async container => {
+        const blocoLogico = container.querySelector('.bloco');
+        return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+    }));
+    return resultados.every(r => r === true);
+}
+
+async function avaliarOR(bloco) {
+    const containers = bloco.querySelectorAll('.bloco-container-logico');
+    const resultados = await Promise.all(Array.from(containers).map(async container => {
+        const blocoLogico = container.querySelector('.bloco');
+        return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+    }));
+    return resultados.some(r => r === true);
+}
+
+
 async function executarBloco(bloco) {
     if (!estado.executandoPrograma || estado.pausado) return;
 
@@ -1858,7 +2121,34 @@ async function executarBloco(bloco) {
                 }
                 break;
             case 'se':
-                await executarBlocoCondicional(bloco);
+            case 'senaoSe':
+            case 'senao':
+                const condicao = tipo === 'senao' ? true : bloco.querySelector('select')?.value;
+                let condicaoAtendida = false;
+
+                if (tipo === 'senao') {
+                    // SENAO executes if previous SE or SENAO SE didn't execute
+                    const blocoAnterior = bloco.previousElementSibling;
+                    condicaoAtendida = blocoAnterior && 
+                                     (blocoAnterior.dataset.tipo === 'se' || blocoAnterior.dataset.tipo === 'senaoSe') &&
+                                     !blocoAnterior.dataset.executado;
+                } else {
+                    // SE or SENAO SE
+                    condicaoAtendida = verificarCondicao(condicao);
+                }
+
+                if (condicaoAtendida) {
+                    bloco.dataset.executado = 'true';
+                    const container = bloco.querySelector('.bloco-container');
+                    const blocosInternos = Array.from(container.children)
+                        .filter(el => el.classList.contains('bloco'));
+                    
+                    for (const blocoInterno of blocosInternos) {
+                        await executarBloco(blocoInterno);
+                    }
+                } else {
+                    bloco.dataset.executado = 'false';
+                }
                 break;
             case 'paraSempre':
                 const blocosSempre = Array.from(bloco.querySelector('.bloco-container').children)
@@ -1890,13 +2180,97 @@ async function executarBloco(bloco) {
                 await pararAudio();
                 await new Promise(resolve => setTimeout(resolve, 300));
                 break;
+            case 'seLogico':
+                const containerLogico = bloco.querySelector('.bloco-container-logico');
+                const blocoLogico = containerLogico.querySelector('.bloco');
+                const resultado = await avaliarCondicaoLogica(blocoLogico);
+                
+                if (resultado) {
+                    const containerExecucao = bloco.querySelector('.bloco-container:not(.bloco-container-logico)');
+                    const blocosExecucao = Array.from(containerExecucao.children)
+                        .filter(el => el.classList.contains('bloco'));
+                    
+                    for (const blocoExec of blocosExecucao) {
+                        await executarBloco(blocoExec);
+                    }
+                }
+                break;
+
+            case 'and':
+            case 'or':
+                // Estes blocos são avaliados apenas como parte de condições
+                return await executarBlocoLogico(bloco);
+
+            case 'verificarParedeDireita':
+            case 'verificarParedeEsquerda':
+                // Estes blocos retornam valores booleanos
+                return await executarBlocoLogico(bloco);
+            case 'verificarChegada':
+                return verificarVitoriaLogica();
+            case 'pararRobo':
+                estado.executandoPrograma = false;
+                estado.pausado = false;
+                const msgPararRobo = i18nThemeManager.translate('messages.robotStopped');
+                mostrarMensagem(msgPararRobo, 'info');
+                break;
             default:
                 const msgErro = i18nThemeManager.translate('messages.error.unknownBlock');
                 throw new Error(msgErro);
         }
     } finally {
         bloco.classList.remove('executando');
+
+        // Clean up execution flags after all blocks in a conditional chain are processed
+        if (tipo === 'se' || tipo === 'senaoSe' || tipo === 'senao') {
+            const proximoBloco = bloco.nextElementSibling;
+            if (!proximoBloco || (proximoBloco.dataset.tipo !== 'senaoSe' && proximoBloco.dataset.tipo !== 'senao')) {
+                limparFlagsExecucao(bloco);
+            }
+        }
     }
+
+}
+
+function limparFlagsExecucao(blocoAtual) {
+    let bloco = blocoAtual;
+    while (bloco && (bloco.dataset.tipo === 'se' || bloco.dataset.tipo === 'senaoSe' || bloco.dataset.tipo === 'senao')) {
+        delete bloco.dataset.executado;
+        bloco = bloco.previousElementSibling;
+    }
+}
+
+async function avaliarCondicaoLogica(bloco) {
+    if (!bloco) return false;
+    
+    const tipo = bloco.dataset.tipo;
+    const configBloco = BLOCOS_CONFIG.find(b => b.id === tipo);
+    
+    if (!configBloco) return false;
+    
+    if (configBloco.retornaLogico) {
+        switch(tipo) {
+            case 'verificarParedeDireita':
+                return verificarParedeEspecifica('direita');
+            case 'verificarParedeEsquerda':
+                return verificarParedeEspecifica('esquerda');
+            case 'verificarParedeTras':
+                return verificarParedeEspecifica('tras');
+        }
+    }
+    
+    if (tipo === 'and' || tipo === 'or') {
+        const containers = bloco.querySelectorAll('.bloco-container-logico');
+        const resultados = await Promise.all(Array.from(containers).map(async container => {
+            const blocoLogico = container.querySelector('.bloco');
+            return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+        }));
+        
+        return tipo === 'and' 
+            ? resultados.every(r => r === true)
+            : resultados.some(r => r === true);
+    }
+    
+    return false;
 }
 
 // Função auxiliar para verificar paredes específicas
@@ -1997,6 +2371,12 @@ function verificarVitoria() {
            estado.posicaoAtual.y === estado.posicaoChegada.y;
 }
 
+function verificarVitoriaLogica() {
+    if (estado.posicaoAtual.x === estado.posicaoChegada.x && 
+           estado.posicaoAtual.y === estado.posicaoChegada.y) return true;
+    return false;
+}
+
 async function reproduzirSomVitoria() {
     const frequencias = [440, 554.37, 659.25, 880];
     const duracao = 200;
@@ -2069,6 +2449,9 @@ async function inicializarJogo() {
     // Configurar interface
     configurarEventListeners();
     configurarTouchLabirinto();
+
+    //Permitir adicionar JSON ao Meu Programa
+    configurarDragDropJSON(); // Add this line
     
     // Iniciar jogo
     desenharLabirinto();
@@ -2143,6 +2526,49 @@ function configurarEventListeners() {
     });
 }
 
+// Configurar drag and drop de JSON
+// Em main.js, modifique a função configurarDragDropJSON:
+function configurarDragDropJSON() {
+    const sequenciaBlocos = document.getElementById('sequencia-blocos');
+    
+    sequenciaBlocos.addEventListener('dragenter', (e) => {
+        if (e.dataTransfer.types.includes('Files')) {
+            e.preventDefault();
+            sequenciaBlocos.classList.add('drag-over');
+        }
+    });
+    
+    sequenciaBlocos.addEventListener('dragover', (e) => {
+        if (e.dataTransfer.types.includes('Files')) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+    });
+    
+    sequenciaBlocos.addEventListener('dragleave', () => {
+        sequenciaBlocos.classList.remove('drag-over');
+    });
+    
+    sequenciaBlocos.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        sequenciaBlocos.classList.remove('drag-over');
+        
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/json') {
+            try {
+                const texto = await file.text();
+                const programa = JSON.parse(texto);
+                gerenciadorBlocos.carregarPrograma(programa);
+                mostrarMensagem(i18nThemeManager.translate('messages.loaded'), 'success');
+            } catch (erro) {
+                console.error('Erro ao carregar JSON:', erro);
+                mostrarMensagem(i18nThemeManager.translate('messages.error.loading'), 'error');
+            }
+        }
+    });
+}
+
+
 // Prevenção de perda acidental de programa
 window.addEventListener('beforeunload', (e) => {
     if (elementos.sequenciaBlocos.children.length > 1) {
@@ -2155,11 +2581,13 @@ window.addEventListener('beforeunload', (e) => {
 document.addEventListener('DOMContentLoaded', inicializarJogo);
 
 // Exportações
-export {
+export { 
     executarPrograma,
     resetarPosicao,
     verificarVitoria,
-    mostrarMensagem
+    mostrarMensagem,
+    avaliarCondicaoLogica,
+    executarBlocoLogico
 };
 
 styles.css:
@@ -2250,10 +2678,11 @@ body {
 
 /* Blocos existentes */
 #programa .bloco-movimento { background-color: #4CAF50; }
-#programa .bloco-controle { background-color: #ff9800; }
-#programa .bloco-repeticao { background-color: #2196F3; }
-#programa .bloco-condicional { background-color: #9c27b0; }
 #programa .bloco-espelhamento { background-color: #E91E63; }
+#programa .bloco-controle { background-color: #2196F3; }
+#programa .bloco-logico { background-color: #9c27b0; }
+#programa .bloco-sensores { background-color: #795548; } 
+#programa .bloco-efeitos { background-color: #FF9800; }
 
 /* Novos blocos SENÃO SE e SENÃO */
 #programa .bloco-senaoSe { background-color: #FF9800; }
@@ -2543,8 +2972,8 @@ button:disabled {
 
 .botao-ajuda {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 40px;
+    right: 40px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -2556,13 +2985,14 @@ button:disabled {
 
 /* Lixeira */
 #lixeira {
-    position: fixed;
+        position: fixed;
     bottom: 20px;
     left: 20px;
     width: 50px;
     height: 50px;
-    background-color: #f5f5f5;
     border-radius: 50%;
+    background-color: #f5f5f5;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2570,6 +3000,7 @@ button:disabled {
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
+    z-index: 1000;
 }
 
 #lixeira.lixeira-ativa {
@@ -2637,6 +3068,47 @@ button:disabled {
 #programa .bloco-pararTom::before {
     content: '🔇'; /* Ícone de alto-falante mudo */
     margin-right: 5px;
+}
+
+const estilosNovos = `
+.bloco-logico {
+    background-color: #9c27b0;
+}
+
+.bloco-operadorLogico {
+    background-color: #FF5722;
+}
+
+.bloco-verificadorLogico {
+    background-color: #795548;
+}
+
+.bloco-container-logico {
+    min-height: 40px;
+    padding: 8px;
+    margin: 5px 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.container-titulo {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+}
+
+/* Indicador visual para blocos que retornam valores booleanos */
+/* Indicador de retorno booleano */
+[data-retorna-logico="true"]::after {
+    content: "→ " attr(data-tipo);
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    opacity: 0.7;
+    color: white;
 }
 
 
@@ -2931,6 +3403,235 @@ button:disabled {
   opacity: 0.7;
   transform: scale(1.05);
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+/* Ajustes para telas pequenas */
+@media (max-width: 768px) {
+    .touch-device .language-select,
+    .touch-device .theme-switch {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+    }
+    
+    .touch-device body {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .touch-device #blocos-disponiveis {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: row;
+        padding: 10px;
+    }
+
+    .touch-device #blocos-disponiveis .grupo-blocos {
+        min-width: 200px;
+        margin-right: 15px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .touch-device #labirinto-container {
+        width: 100%;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .touch-device #labirinto {
+        max-width: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .touch-device #programa-container {
+        width: 100%;
+        max-width: none;
+        height: 300px;
+    }
+
+    .touch-device #controles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .touch-device button {
+        width: 100%;
+        margin: 0;
+    }
+
+    .touch-device #nivel-controles {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .touch-device #nivel-select {
+        width: 100%;
+    }
+
+    .touch-device .bloco {
+        margin: 5px 0;
+        width: 100%;
+    }
+
+    .touch-device .bloco-container {
+        margin-left: 20px;
+        padding: 8px;
+    }
+
+    /* Melhorar estilo do tutorial em telas pequenas */
+    .touch-device .tutorial-content {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .touch-device .tutorial-content ol {
+        padding-left: 20px;
+    }
+
+    .touch-device .tutorial-atalhos {
+        display: none; /* Ocultar atalhos em dispositivos touch */
+    }
+
+    /* Ajustar posição da lixeira e botão de ajuda */
+    .touch-device #lixeira {
+        bottom: 10px;
+        left: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .touch-device #ajuda {
+        bottom: 10px;
+        right: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    /* Melhorar layout dos blocos em tela pequena */
+    .touch-device .bloco-conteudo {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .touch-device .bloco input,
+    .touch-device .bloco select {
+        width: 100%;
+        max-width: 150px;
+    }
+
+    /* Ajustar menu de configurações */
+    .touch-device .config-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-color);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Adicionar suporte para gestos de zoom */
+    .touch-device #labirinto {
+        transform-origin: center;
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Melhorar feedback visual durante o arraste */
+    .touch-device .bloco.dragging {
+        position: fixed;
+        z-index: 1000;
+        width: 90%;
+        max-width: 300px;
+        opacity: 0.9;
+    }
+
+    /* Ajustar espaçamento de blocos aninhados */
+    .touch-device .bloco-container .bloco-container {
+        margin-left: 15px;
+    }
+
+    /* Ajustar mensagens de feedback */
+    .touch-device #mensagem {
+        width: 90%;
+        max-width: none;
+        left: 5%;
+        transform: none;
+        padding: 15px;
+        font-size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 50px;
+    }
+
+    /* Melhorar visualização de placeholders */
+    .touch-device .container-placeholder,
+    .touch-device .programa-placeholder {
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* Ajustar seletores de idioma e tema em modo landscape */
+    @media (orientation: landscape) {
+        .touch-device .config-menu {
+            position: relative;
+            padding: 5px;
+        }
+
+        .touch-device #blocos-disponiveis {
+            height: 150px;
+        }
+
+        .touch-device #programa-container {
+            height: 200px;
+        }
+
+        .touch-device #controles {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Ajustes específicos para telas muito pequenas */
+    @media (max-width: 320px) {
+        .touch-device .bloco {
+            font-size: 14px;
+        }
+
+        .touch-device button {
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        .touch-device #lixeira,
+        .touch-device #ajuda {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+    }
 }
 
 touch.css:
@@ -3400,13 +4101,15 @@ translations.json:
 {
   "pt": {
     "blocks": {
+      "robotStopped": "🛑 Robô parado!",
+      "stopRobot": "Parar Robô",
+      "checkFlag": "Chegou na Bandeira",
       "movimento": "Movimentos",
-      "controle": "Controle",
-      "repeticao": "Repetição",
-      "condicional": "Condicionais", 
       "espelhamento": "Espelhamento",
-      "esperar": "Esperar",
-      "aguardar": "Aguardar",
+      "controle": "Controle",
+      "logico": "Lógica",
+      "sensores": "Sensores",
+      "efeitos": "Efeitos",
       "voltarInicio": "Voltar ao Início",
       "verificarParede": "Verificar Paredes",
       "audio": "Áudio",
@@ -3430,9 +4133,25 @@ translations.json:
       "stopTone": "Parar Tom",
       "seconds": "segundos",
       "ms": "ms",
-      "times": "vezes"
+      "times": "vezes",
+      "logico": "Lógica",
+      "operadorLogico": "Operadores Lógicos",
+      "verificadorLogico": "Verificadores Lógicos",
+      "logicalIf": "SE Lógico",
+      "condition": "Condição",
+      "checkWallRight": "Verificar Parede Direita",
+      "checkWallLeft": "Verificar Parede Esquerda",
+      "condition1": "Condição 1",
+      "condition2": "Condição 2",
+      "logicalIf": "SE Lógico",
+      "condition": "Condição",
+      "checkWallRight": "Verificar Parede Direita",
+      "checkWallLeft": "Verificar Parede Esquerda",
+      "checkWallBack": "Verificar Parede Trás",
+      "returnBoolean": "Retorna Booleano"
     },
     "interface": {
+      "dropLogicBlocks": "Arraste blocos lógicos aqui",
       "availableBlocks": "Blocos Disponíveis",
       "dragInstructions": "Arraste os blocos para a área \"Meu Programa\" ➡️",
       "myProgram": "Meu Programa",
@@ -3498,13 +4217,15 @@ translations.json:
   },
   "en": {
     "blocks": {
-      "movement": "Movements",
-      "control": "Control",
-      "repetition": "Repetition",
-      "conditional": "Conditionals",
-      "mirroring": "Mirroring",
-      "wait": "Wait",
-      "await": "Await",
+      "robotStopped": "🛑 Robot stopped!",
+      "stopRobot": "Stop Robot",
+      "checkFlag": "Reached Flag",
+      "movimento": "Movement",
+      "espelhamento": "Mirroring",
+      "controle": "Control",
+      "logico": "Logic",
+      "sensores": "Sensors",
+      "efeitos": "Effects",
       "returnToStart": "Return to Start",
       "checkWall": "Check Walls",
       "moveForward": "Move Forward",
@@ -3524,9 +4245,25 @@ translations.json:
       "checkLeftWall": "Left Wall",
       "checkBackWall": "Back Wall",
       "emitTone": "Emit Tone X Hz",
-      "stopTone": "Stop Tone"
+      "stopTone": "Stop Tone",
+      "logico": "Logic",
+      "operadorLogico": "Logical Operators",
+      "verificadorLogico": "Logical Checkers",
+      "logicalIf": "Logical IF",
+      "condition": "Condition",
+      "checkWallRight": "Check Right Wall",
+      "checkWallLeft": "Check Left Wall",
+      "condition1": "Condition 1",
+      "condition2": "Condition 2",
+      "logicalIf": "Logical IF",
+      "condition": "Condition",
+      "checkWallRight": "Check Right Wall",
+      "checkWallLeft": "Check Left Wall",
+      "checkWallBack": "Check Back Wall",
+      "returnBoolean": "Returns Boolean"
     },
     "interface": {
+      "dropLogicBlocks": "Drop logic blocks here",
       "availableBlocks": "Available Blocks",
       "dragInstructions": "Drag blocks to \"My Program\" area ➡️",
       "myProgram": "My Program",
@@ -3579,13 +4316,15 @@ translations.json:
   },
   "es": {
     "blocks": {
-      "movement": "Movimientos",
-      "control": "Control",
-      "repetition": "Repetición",
-      "conditional": "Condicionales",
-      "mirroring": "Espejo",
-      "wait": "Esperar",
-      "await": "Aguardar",
+      "robotStopped": "🛑 ¡Robot detenido!",
+      "stopRobot": "Detener Robot",
+      "checkFlag": "Llegó a la Bandera",
+      "movimento": "Movimientos",
+      "espelhamento": "Espejo",
+      "controle": "Control",
+      "logico": "Lógica",
+      "sensores": "Sensores",
+      "efeitos": "Efectos",
       "returnToStart": "Volver al Inicio",
       "checkWall": "Verificar Paredes",
       "moveForward": "Avanzar",
@@ -3605,9 +4344,25 @@ translations.json:
       "checkLeftWall": "Hay Pared Izquierda",
       "checkBackWall": "Hay Pared Atrás",
       "emitTone": "Emitir Tono X Hz",
-      "stopTone": "Parar Tono"
+      "stopTone": "Parar Tono",
+      "logico": "Lógica",
+      "operadorLogico": "Operadores Lógicos",
+      "verificadorLogico": "Verificadores Lógicos",
+      "logicalIf": "SI Lógico",
+      "condition": "Condición",
+      "checkWallRight": "Verificar Pared Derecha",
+      "checkWallLeft": "Verificar Pared Izquierda",
+      "condition1": "Condición 1",
+      "condition2": "Condición 2",
+      "logicalIf": "SI Lógico",
+      "condition": "Condición",
+      "checkWallRight": "Verificar Pared Derecha",
+      "checkWallLeft": "Verificar Pared Izquierda",
+      "checkWallBack": "Verificar Pared Atrás",
+      "returnBoolean": "Retorna Booleano"
     },
     "interface": {
+      "dropLogicBlocks": "Arrastra bloques lógicos aquí",
       "availableBlocks": "Bloques Disponibles",
       "dragInstructions": "Arrastra los bloques al área \"Mi Programa\" ➡️",
       "myProgram": "Mi Programa",

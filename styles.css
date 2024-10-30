@@ -85,10 +85,11 @@ body {
 
 /* Blocos existentes */
 #programa .bloco-movimento { background-color: #4CAF50; }
-#programa .bloco-controle { background-color: #ff9800; }
-#programa .bloco-repeticao { background-color: #2196F3; }
-#programa .bloco-condicional { background-color: #9c27b0; }
 #programa .bloco-espelhamento { background-color: #E91E63; }
+#programa .bloco-controle { background-color: #2196F3; }
+#programa .bloco-logico { background-color: #9c27b0; }
+#programa .bloco-sensores { background-color: #795548; } 
+#programa .bloco-efeitos { background-color: #FF9800; }
 
 /* Novos blocos SENÃO SE e SENÃO */
 #programa .bloco-senaoSe { background-color: #FF9800; }
@@ -378,8 +379,8 @@ button:disabled {
 
 .botao-ajuda {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 40px;
+    right: 40px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -391,13 +392,14 @@ button:disabled {
 
 /* Lixeira */
 #lixeira {
-    position: fixed;
+        position: fixed;
     bottom: 20px;
     left: 20px;
     width: 50px;
     height: 50px;
-    background-color: #f5f5f5;
     border-radius: 50%;
+    background-color: #f5f5f5;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -405,6 +407,7 @@ button:disabled {
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
+    z-index: 1000;
 }
 
 #lixeira.lixeira-ativa {
@@ -472,4 +475,45 @@ button:disabled {
 #programa .bloco-pararTom::before {
     content: '🔇'; /* Ícone de alto-falante mudo */
     margin-right: 5px;
+}
+
+const estilosNovos = `
+.bloco-logico {
+    background-color: #9c27b0;
+}
+
+.bloco-operadorLogico {
+    background-color: #FF5722;
+}
+
+.bloco-verificadorLogico {
+    background-color: #795548;
+}
+
+.bloco-container-logico {
+    min-height: 40px;
+    padding: 8px;
+    margin: 5px 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.container-titulo {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+}
+
+/* Indicador visual para blocos que retornam valores booleanos */
+/* Indicador de retorno booleano */
+[data-retorna-logico="true"]::after {
+    content: "→ " attr(data-tipo);
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    opacity: 0.7;
+    color: white;
 }

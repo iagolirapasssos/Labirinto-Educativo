@@ -4,16 +4,11 @@ import touchManager from './touch-manager.js';
 
 // Definição dos tipos de blocos
 const TIPOS_BLOCOS = {
-    MOVIMENTO: 'movimento',
-    CONTROLE: 'controle',
-    REPETICAO: 'repeticao',
-    CONDICIONAL: 'condicional',
-    ESPELHAMENTO: 'espelhamento',
-    ESPERAR: 'esperar',
-    AGUARDAR: 'aguardar',
-    VOLTAR_INICIO: 'voltarInicio',
-    VERIFICAR_PAREDE: 'verificarParede',
-    AUDIO: 'audio'
+    LOGICO: 'logico',
+    MOVIMENTO: 'movimento',      // Movimento e espelhamento
+    CONTROLE: 'controle',       // Controle de fluxo (Se, Repetir, Para Sempre)
+    SENSORES: 'sensores',       // Verificações de parede e condições
+    EFEITOS: 'efeitos'         // Áudio e espera
 };
 
 // Configuração dos blocos
@@ -48,20 +43,20 @@ function atualizarBlocosConfig() {
         },
         // Blocos de Espelhamento
         {
-            tipo: TIPOS_BLOCOS.ESPELHAMENTO,
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
             id: 'espelharH',
             texto: i18nThemeManager.translate('blocks.mirrorH'),
             cor: '#E91E63'
         },
         {
-            tipo: TIPOS_BLOCOS.ESPELHAMENTO,
+            tipo: TIPOS_BLOCOS.MOVIMENTO,
             id: 'espelharV',
             texto: i18nThemeManager.translate('blocks.mirrorV'),
             cor: '#E91E63'
         },
         // Blocos de Repetição
         {
-            tipo: TIPOS_BLOCOS.REPETICAO,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'repetir',
             texto: i18nThemeManager.translate('blocks.repeat'),
             cor: '#2196F3',
@@ -83,7 +78,7 @@ function atualizarBlocosConfig() {
         },
         // Blocos Condicionais
         {
-            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'se',
             texto: i18nThemeManager.translate('blocks.if'),
             cor: '#9c27b0',
@@ -93,18 +88,17 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'senaoSe',
             texto: i18nThemeManager.translate('blocks.elseIf'),
             cor: '#FF9800',
             temContainer: true,
             select: {
-                opcoes: ['caminho livre', 'parede à frente', 'algo mais']
-            },
-            podeAninhar: ['bloco-condicional']
+                opcoes: ['caminho livre', 'parede à frente']
+            }
         },
         {
-            tipo: TIPOS_BLOCOS.CONDICIONAL,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'senao',
             texto: i18nThemeManager.translate('blocks.else'),
             cor: '#FF5722',
@@ -113,7 +107,7 @@ function atualizarBlocosConfig() {
         },
         // Verificação de Paredes
         {
-            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            tipo: TIPOS_BLOCOS.LOGICO,
             id: 'temParedeDireita',
             texto: i18nThemeManager.translate('blocks.checkRightWall'),
             cor: '#795548',
@@ -123,7 +117,7 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            tipo: TIPOS_BLOCOS.LOGICO,
             id: 'temParedeEsquerda',
             texto: i18nThemeManager.translate('blocks.checkLeftWall'),
             cor: '#6D4C41',
@@ -133,7 +127,7 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.VERIFICAR_PAREDE,
+            tipo: TIPOS_BLOCOS.LOGICO,
             id: 'temParedeTras',
             texto: i18nThemeManager.translate('blocks.checkBackWall'),
             cor: '#5D4037',
@@ -144,7 +138,7 @@ function atualizarBlocosConfig() {
         },
         // Aguardar e Áudio
         {
-            tipo: TIPOS_BLOCOS.AGUARDAR,
+            tipo: TIPOS_BLOCOS.CONTROLE,
             id: 'aguardar',
             texto: i18nThemeManager.translate('blocks.waitMs'),
             cor: '#3F51B5',
@@ -157,7 +151,7 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.AUDIO,
+            tipo: TIPOS_BLOCOS.EFEITOS,
             id: 'emitirTom',
             texto: i18nThemeManager.translate('blocks.emitTone'),
             cor: '#FF9800',
@@ -170,13 +164,104 @@ function atualizarBlocosConfig() {
             }
         },
         {
-            tipo: TIPOS_BLOCOS.AUDIO,
+            tipo: TIPOS_BLOCOS.EFEITOS,
             id: 'pararTom',
             texto: i18nThemeManager.translate('blocks.stopTone'),
             cor: '#FF5722',
             temContainer: false
+        },
+        // Bloco SE lógico
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'seLogico',
+            texto: i18nThemeManager.translate('blocks.logicalIf'),
+            cor: '#9c27b0',
+            temContainer: true,
+            temContainerLogico: true,
+            containerLogicoTitulo: i18nThemeManager.translate('blocks.condition'),
+            temContainerExecucao: true
+        },
+
+        // Operadores Lógicos AND e OR
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'and',
+            texto: 'AND',
+            cor: '#FF5722',
+            temContainer: false,
+            temDoisContainers: true,
+            containerTitulos: ['Condição 1', 'Condição 2']
+        },
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'or',
+            texto: 'OR',
+            cor: '#FF5722',
+            temContainer: false,
+            temDoisContainers: true,
+            containerTitulos: ['Condição 1', 'Condição 2']
+        },
+
+        // Verificadores de Parede Lógicos
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarParedeDireita',
+            texto: i18nThemeManager.translate('blocks.checkWallRight'),
+            cor: '#795548',
+            retornaLogico: true
+        },
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarParedeEsquerda',
+            texto: i18nThemeManager.translate('blocks.checkWallLeft'),
+            cor: '#795548',
+            retornaLogico: true
+        },
+        {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarChegada',
+            texto: i18nThemeManager.translate('blocks.checkFlag'),
+            cor: '#795548',
+            retornaLogico: true
+        },
+        {
+            tipo: TIPOS_BLOCOS.CONTROLE,
+            id: 'pararRobo',
+            texto: i18nThemeManager.translate('blocks.stopRobot'),
+            cor: '#f44336',
+            temContainer: false
         }
     ];
+}
+
+// Move mostrarMensagem outside the class
+function mostrarMensagem(texto, tipo) {
+    const mensagemElement = document.getElementById('mensagem');
+    if (!mensagemElement) return;
+
+    mensagemElement.textContent = texto;
+    mensagemElement.className = tipo;
+    mensagemElement.style.display = 'block';
+
+    mensagemElement.animate([
+        { transform: 'translateY(-20px)', opacity: 0 },
+        { transform: 'translateY(0)', opacity: 1 }
+    ], {
+        duration: 300,
+        easing: 'ease-out'
+    });
+
+    setTimeout(() => {
+        mensagemElement.animate([
+            { transform: 'translateY(0)', opacity: 1 },
+            { transform: 'translateY(-20px)', opacity: 0 }
+        ], {
+            duration: 300,
+            easing: 'ease-in'
+        }).onfinish = () => {
+            mensagemElement.style.display = 'none';
+        };
+    }, 3000);
 }
 
 class GerenciadorBlocos {
@@ -266,6 +351,11 @@ class GerenciadorBlocos {
         const bloco = document.createElement('div');
         bloco.className = `bloco bloco-${config.tipo}`;
         bloco.dataset.tipo = config.id;
+
+        if (config.retornaLogico) {
+            bloco.dataset.retornaLogico = "true";
+        }
+
         bloco.draggable = !this.touchSupported;
         bloco.style.backgroundColor = config.cor;
 
@@ -329,6 +419,42 @@ class GerenciadorBlocos {
             container.appendChild(placeholder);
             bloco.appendChild(container);
         }
+
+        if (config.temContainerLogico) {
+        const containerLogico = document.createElement('div');
+        containerLogico.className = 'bloco-container-logico drop-zone';
+        
+        const titulo = document.createElement('div');
+        titulo.className = 'container-titulo';
+        titulo.textContent = config.containerLogicoTitulo;
+        containerLogico.appendChild(titulo);
+        
+        const placeholder = document.createElement('div');
+        placeholder.className = 'container-placeholder';
+        placeholder.textContent = i18nThemeManager.translate('interface.dropLogicBlocks');
+        containerLogico.appendChild(placeholder);
+        
+        bloco.appendChild(containerLogico);
+    }
+
+    if (config.temDoisContainers) {
+        config.containerTitulos.forEach(titulo => {
+            const container = document.createElement('div');
+            container.className = 'bloco-container-logico drop-zone';
+            
+            const tituloEl = document.createElement('div');
+            tituloEl.className = 'container-titulo';
+            tituloEl.textContent = titulo;
+            container.appendChild(tituloEl);
+            
+            const placeholder = document.createElement('div');
+            placeholder.className = 'container-placeholder';
+            placeholder.textContent = i18nThemeManager.translate('interface.dropLogicBlocks');
+            container.appendChild(placeholder);
+            
+            bloco.appendChild(container);
+        });
+    }
 
         return bloco;
     }
@@ -963,31 +1089,69 @@ class GerenciadorBlocos {
     }
 
     serializarBloco(bloco) {
-        const tipo = bloco.dataset.tipo;
-        const configBloco = BLOCOS_CONFIG.find(b => b.id === tipo);
-        const blocoData = {
-            tipo: tipo,
-            texto: configBloco.texto,
-            cor: configBloco.cor
-        };
+       if (!bloco) return null;
+       const tipo = bloco.dataset.tipo;
+       const configBloco = BLOCOS_CONFIG.find(b => b.id === tipo);
+       
+       if (!configBloco) return null;
 
-        if (configBloco.input) {
-            const input = bloco.querySelector('input');
-            blocoData.valor = input ? input.value : configBloco.input.valor;
-        }
+       const blocoData = {
+           tipo: tipo,
+           texto: configBloco.texto,
+           cor: configBloco.cor
+       };
 
-        if (configBloco.select) {
-            const select = bloco.querySelector('select');
-            blocoData.selecionado = select ? select.value : configBloco.select.opcoes[0];
-        }
+       if (configBloco.input) {
+           const input = bloco.querySelector('input');
+           blocoData.valor = input ? input.value : configBloco.input.valor;
+       }
 
-        if (configBloco.temContainer) {
-            const container = bloco.querySelector('.bloco-container');
-            const filhos = Array.from(container.children).filter(el => el.classList.contains('bloco'));
-            blocoData.filhos = filhos.map(filho => this.serializarBloco(filho));
-        }
+       if (configBloco.select) {
+           const select = bloco.querySelector('select');
+           blocoData.selecionado = select ? select.value : configBloco.select.opcoes[0];
+       }
 
-        return blocoData;
+       if (configBloco.temContainerLogico) {
+           const containerLogico = bloco.querySelector('.bloco-container-logico');
+           if (containerLogico) {
+               const blocosLogicos = Array.from(containerLogico.children)
+                   .filter(el => el.classList.contains('bloco'));
+               blocoData.logica = blocosLogicos.map(b => this.serializarBloco(b))
+                   .filter(b => b !== null);
+           }
+       }
+
+       if (configBloco.temContainerExecucao) {
+           const containerExecucao = bloco.querySelector('.bloco-container:not(.bloco-container-logico)');
+           if (containerExecucao) {
+               const blocosExecucao = Array.from(containerExecucao.children)
+                   .filter(el => el.classList.contains('bloco'));
+               blocoData.execucao = blocosExecucao.map(b => this.serializarBloco(b))
+                   .filter(b => b !== null);
+           }
+       }
+
+       if (configBloco.temDoisContainers) {
+           const containers = bloco.querySelectorAll('.bloco-container-logico');
+           if (containers.length) {
+               blocoData.condicoes = Array.from(containers).map(container => {
+                   const blocoLogico = container.querySelector('.bloco');
+                   return blocoLogico ? this.serializarBloco(blocoLogico) : null;
+               }).filter(b => b !== null);
+           }
+       }
+
+       if (configBloco.temContainer && !configBloco.temContainerExecucao) {
+           const container = bloco.querySelector('.bloco-container');
+           if (container) {
+               const blocos = Array.from(container.children)
+                   .filter(el => el.classList.contains('bloco'));
+               blocoData.filhos = blocos.map(b => this.serializarBloco(b))
+                   .filter(b => b !== null);
+           }
+       }
+
+       return blocoData;
     }
 
     carregarPrograma(programa) {
@@ -995,74 +1159,96 @@ class GerenciadorBlocos {
         sequenciaBlocos.innerHTML = '';
 
         programa.forEach(blocoData => {
-            const bloco = this.criarBlocoDeserializado(blocoData);
-            if (bloco) {
-                sequenciaBlocos.appendChild(bloco);
-            }
-        });
-    }
+                const bloco = this.criarBlocoDeserializado(blocoData);
+                if (bloco) {
+                    sequenciaBlocos.appendChild(bloco);
+                }
+            });
+        }
 
     criarBlocoDeserializado(blocoData) {
-        const configBloco = BLOCOS_CONFIG.find(b => b.id === blocoData.tipo);
+            const configBloco = BLOCOS_CONFIG.find(b => b.id === blocoData.tipo);
         if (!configBloco) return null;
 
         const bloco = this.criarBloco(configBloco);
 
-        if (blocoData.valor) {
+        // Configurar valores de input se existirem
+        if (blocoData.valor && configBloco.input) {
             const input = bloco.querySelector('input');
-            if (input) input.value = blocoData.valor;
+            if (input) {
+                input.value = blocoData.valor;
+            }
         }
 
-        if (blocoData.selecionado) {
+        // Configurar valores de select se existirem
+        if (blocoData.selecionado && configBloco.select) {
             const select = bloco.querySelector('select');
-            if (select) select.value = blocoData.selecionado;
+            if (select) {
+                select.value = blocoData.selecionado;
+            }
         }
 
-        if (blocoData.filhos && blocoData.filhos.length > 0) {
+        // Processar filhos em container padrão
+        if (blocoData.filhos && configBloco.temContainer) {
             const container = bloco.querySelector('.bloco-container');
             if (container) {
-                container.innerHTML = '';
+                container.innerHTML = ''; // Limpar placeholder
                 blocoData.filhos.forEach(filhoData => {
                     const filho = this.criarBlocoDeserializado(filhoData);
-                    if (filho) container.appendChild(filho);
+                    if (filho) {
+                        container.appendChild(filho);
+                    }
                 });
             }
         }
 
-        return bloco;
+        // Processar blocos lógicos
+        if (blocoData.logica && configBloco.temContainerLogico) {
+            const containerLogico = bloco.querySelector('.bloco-container-logico');
+            if (containerLogico) {
+                containerLogico.innerHTML = ''; // Limpar placeholder
+                blocoData.logica.forEach(logicoData => {
+                    const filho = this.criarBlocoDeserializado(logicoData);
+                    if (filho) {
+                        containerLogico.appendChild(filho);
+                    }
+                });
+            }
+        }
+
+        // Processar bloco de execução
+        if (blocoData.execucao && configBloco.temContainerExecucao) {
+            const containerExecucao = bloco.querySelector('.bloco-container:not(.bloco-container-logico)');
+            if (containerExecucao) {
+                containerExecucao.innerHTML = ''; // Limpar placeholder
+                blocoData.execucao.forEach(execData => {
+                    const filho = this.criarBlocoDeserializado(execData);
+                    if (filho) {
+                        containerExecucao.appendChild(filho);
+                    }
+                });
+            }
+        }
+
+        // Processar containers duplos (AND/OR)
+        if (blocoData.condicoes && configBloco.temDoisContainers) {
+            const containers = bloco.querySelectorAll('.bloco-container-logico');
+            blocoData.condicoes.forEach((condicao, index) => {
+                if (condicao && containers[index]) {
+                    containers[index].innerHTML = ''; // Limpar placeholder
+                    const filho = this.criarBlocoDeserializado(condicao);
+                    if (filho) {
+                        containers[index].appendChild(filho);
+                    }
+                }
+            });
+        }
+
+        return bloco;   
     }
-}
-
-// Função para mostrar mensagens
-function mostrarMensagem(texto, tipo) {
-    const mensagemElement = document.getElementById('mensagem');
-    if (!mensagemElement) return;
-
-    mensagemElement.textContent = texto;
-    mensagemElement.className = tipo;
-    mensagemElement.style.display = 'block';
-
-    mensagemElement.animate([
-        { transform: 'translateY(-20px)', opacity: 0 },
-        { transform: 'translateY(0)', opacity: 1 }
-    ], {
-        duration: 300,
-        easing: 'ease-out'
-    });
-
-    setTimeout(() => {
-        mensagemElement.animate([
-            { transform: 'translateY(0)', opacity: 1 },
-            { transform: 'translateY(-20px)', opacity: 0 }
-        ], {
-            duration: 300,
-            easing: 'ease-in'
-        }).onfinish = () => {
-            mensagemElement.style.display = 'none';
-        };
-    }, 3000);
 }
 
 // Exportar para uso em main.js
 export const gerenciadorBlocos = new GerenciadorBlocos();
-export { mostrarMensagem };
+export { mostrarMensagem, BLOCOS_CONFIG };
+

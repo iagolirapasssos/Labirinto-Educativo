@@ -1,5 +1,5 @@
 // main.js
-import { gerenciadorBlocos, mostrarMensagem } from './blocks.js';
+import { gerenciadorBlocos, mostrarMensagem, BLOCOS_CONFIG } from './blocks.js';
 import { i18nThemeManager } from './i18n-theme-manager.js';
 import touchManager from './touch-manager.js';
 
@@ -522,6 +522,56 @@ async function executarPrograma() {
     }
 }
 
+async function executarBlocoLogico(bloco) {
+    const tipo = bloco.dataset.tipo;
+    
+    switch(tipo) {
+        case 'and':
+        case 'or':
+            const containers = bloco.querySelectorAll('.bloco-container-logico');
+            const resultados = await Promise.all(Array.from(containers).map(async container => {
+                const blocoLogico = container.querySelector('.bloco');
+                return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+            }));
+            return tipo === 'and' 
+                ? resultados.every(r => r === true)
+                : resultados.some(r => r === true);
+            
+        case 'seLogico':
+            const containerLogico = bloco.querySelector('.bloco-container-logico');
+            const blocoLogico = containerLogico?.querySelector('.bloco');
+            return await avaliarCondicaoLogica(blocoLogico);
+            
+        case 'verificarParedeDireita':
+        case 'verificarParedeEsquerda':
+        case 'verificarParedeTras':
+            const direcao = tipo.replace('verificarParede', '').toLowerCase();
+            return verificarParedeEspecifica(direcao);
+            
+        default:
+            return false;
+    }
+}
+
+async function avaliarAND(bloco) {
+    const containers = bloco.querySelectorAll('.bloco-container-logico');
+    const resultados = await Promise.all(Array.from(containers).map(async container => {
+        const blocoLogico = container.querySelector('.bloco');
+        return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+    }));
+    return resultados.every(r => r === true);
+}
+
+async function avaliarOR(bloco) {
+    const containers = bloco.querySelectorAll('.bloco-container-logico');
+    const resultados = await Promise.all(Array.from(containers).map(async container => {
+        const blocoLogico = container.querySelector('.bloco');
+        return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+    }));
+    return resultados.some(r => r === true);
+}
+
+
 async function executarBloco(bloco) {
     if (!estado.executandoPrograma || estado.pausado) return;
 
@@ -561,7 +611,34 @@ async function executarBloco(bloco) {
                 }
                 break;
             case 'se':
-                await executarBlocoCondicional(bloco);
+            case 'senaoSe':
+            case 'senao':
+                const condicao = tipo === 'senao' ? true : bloco.querySelector('select')?.value;
+                let condicaoAtendida = false;
+
+                if (tipo === 'senao') {
+                    // SENAO executes if previous SE or SENAO SE didn't execute
+                    const blocoAnterior = bloco.previousElementSibling;
+                    condicaoAtendida = blocoAnterior && 
+                                     (blocoAnterior.dataset.tipo === 'se' || blocoAnterior.dataset.tipo === 'senaoSe') &&
+                                     !blocoAnterior.dataset.executado;
+                } else {
+                    // SE or SENAO SE
+                    condicaoAtendida = verificarCondicao(condicao);
+                }
+
+                if (condicaoAtendida) {
+                    bloco.dataset.executado = 'true';
+                    const container = bloco.querySelector('.bloco-container');
+                    const blocosInternos = Array.from(container.children)
+                        .filter(el => el.classList.contains('bloco'));
+                    
+                    for (const blocoInterno of blocosInternos) {
+                        await executarBloco(blocoInterno);
+                    }
+                } else {
+                    bloco.dataset.executado = 'false';
+                }
                 break;
             case 'paraSempre':
                 const blocosSempre = Array.from(bloco.querySelector('.bloco-container').children)
@@ -593,13 +670,97 @@ async function executarBloco(bloco) {
                 await pararAudio();
                 await new Promise(resolve => setTimeout(resolve, 300));
                 break;
+            case 'seLogico':
+                const containerLogico = bloco.querySelector('.bloco-container-logico');
+                const blocoLogico = containerLogico.querySelector('.bloco');
+                const resultado = await avaliarCondicaoLogica(blocoLogico);
+                
+                if (resultado) {
+                    const containerExecucao = bloco.querySelector('.bloco-container:not(.bloco-container-logico)');
+                    const blocosExecucao = Array.from(containerExecucao.children)
+                        .filter(el => el.classList.contains('bloco'));
+                    
+                    for (const blocoExec of blocosExecucao) {
+                        await executarBloco(blocoExec);
+                    }
+                }
+                break;
+
+            case 'and':
+            case 'or':
+                // Estes blocos são avaliados apenas como parte de condições
+                return await executarBlocoLogico(bloco);
+
+            case 'verificarParedeDireita':
+            case 'verificarParedeEsquerda':
+                // Estes blocos retornam valores booleanos
+                return await executarBlocoLogico(bloco);
+            case 'verificarChegada':
+                return verificarVitoriaLogica();
+            case 'pararRobo':
+                estado.executandoPrograma = false;
+                estado.pausado = false;
+                const msgPararRobo = i18nThemeManager.translate('messages.robotStopped');
+                mostrarMensagem(msgPararRobo, 'info');
+                break;
             default:
                 const msgErro = i18nThemeManager.translate('messages.error.unknownBlock');
                 throw new Error(msgErro);
         }
     } finally {
         bloco.classList.remove('executando');
+
+        // Clean up execution flags after all blocks in a conditional chain are processed
+        if (tipo === 'se' || tipo === 'senaoSe' || tipo === 'senao') {
+            const proximoBloco = bloco.nextElementSibling;
+            if (!proximoBloco || (proximoBloco.dataset.tipo !== 'senaoSe' && proximoBloco.dataset.tipo !== 'senao')) {
+                limparFlagsExecucao(bloco);
+            }
+        }
     }
+
+}
+
+function limparFlagsExecucao(blocoAtual) {
+    let bloco = blocoAtual;
+    while (bloco && (bloco.dataset.tipo === 'se' || bloco.dataset.tipo === 'senaoSe' || bloco.dataset.tipo === 'senao')) {
+        delete bloco.dataset.executado;
+        bloco = bloco.previousElementSibling;
+    }
+}
+
+async function avaliarCondicaoLogica(bloco) {
+    if (!bloco) return false;
+    
+    const tipo = bloco.dataset.tipo;
+    const configBloco = BLOCOS_CONFIG.find(b => b.id === tipo);
+    
+    if (!configBloco) return false;
+    
+    if (configBloco.retornaLogico) {
+        switch(tipo) {
+            case 'verificarParedeDireita':
+                return verificarParedeEspecifica('direita');
+            case 'verificarParedeEsquerda':
+                return verificarParedeEspecifica('esquerda');
+            case 'verificarParedeTras':
+                return verificarParedeEspecifica('tras');
+        }
+    }
+    
+    if (tipo === 'and' || tipo === 'or') {
+        const containers = bloco.querySelectorAll('.bloco-container-logico');
+        const resultados = await Promise.all(Array.from(containers).map(async container => {
+            const blocoLogico = container.querySelector('.bloco');
+            return blocoLogico ? await avaliarCondicaoLogica(blocoLogico) : false;
+        }));
+        
+        return tipo === 'and' 
+            ? resultados.every(r => r === true)
+            : resultados.some(r => r === true);
+    }
+    
+    return false;
 }
 
 // Função auxiliar para verificar paredes específicas
@@ -700,6 +861,12 @@ function verificarVitoria() {
            estado.posicaoAtual.y === estado.posicaoChegada.y;
 }
 
+function verificarVitoriaLogica() {
+    if (estado.posicaoAtual.x === estado.posicaoChegada.x && 
+           estado.posicaoAtual.y === estado.posicaoChegada.y) return true;
+    return false;
+}
+
 async function reproduzirSomVitoria() {
     const frequencias = [440, 554.37, 659.25, 880];
     const duracao = 200;
@@ -772,6 +939,9 @@ async function inicializarJogo() {
     // Configurar interface
     configurarEventListeners();
     configurarTouchLabirinto();
+
+    //Permitir adicionar JSON ao Meu Programa
+    configurarDragDropJSON(); // Add this line
     
     // Iniciar jogo
     desenharLabirinto();
@@ -846,6 +1016,49 @@ function configurarEventListeners() {
     });
 }
 
+// Configurar drag and drop de JSON
+// Em main.js, modifique a função configurarDragDropJSON:
+function configurarDragDropJSON() {
+    const sequenciaBlocos = document.getElementById('sequencia-blocos');
+    
+    sequenciaBlocos.addEventListener('dragenter', (e) => {
+        if (e.dataTransfer.types.includes('Files')) {
+            e.preventDefault();
+            sequenciaBlocos.classList.add('drag-over');
+        }
+    });
+    
+    sequenciaBlocos.addEventListener('dragover', (e) => {
+        if (e.dataTransfer.types.includes('Files')) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+    });
+    
+    sequenciaBlocos.addEventListener('dragleave', () => {
+        sequenciaBlocos.classList.remove('drag-over');
+    });
+    
+    sequenciaBlocos.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        sequenciaBlocos.classList.remove('drag-over');
+        
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/json') {
+            try {
+                const texto = await file.text();
+                const programa = JSON.parse(texto);
+                gerenciadorBlocos.carregarPrograma(programa);
+                mostrarMensagem(i18nThemeManager.translate('messages.loaded'), 'success');
+            } catch (erro) {
+                console.error('Erro ao carregar JSON:', erro);
+                mostrarMensagem(i18nThemeManager.translate('messages.error.loading'), 'error');
+            }
+        }
+    });
+}
+
+
 // Prevenção de perda acidental de programa
 window.addEventListener('beforeunload', (e) => {
     if (elementos.sequenciaBlocos.children.length > 1) {
@@ -858,9 +1071,11 @@ window.addEventListener('beforeunload', (e) => {
 document.addEventListener('DOMContentLoaded', inicializarJogo);
 
 // Exportações
-export {
+export { 
     executarPrograma,
     resetarPosicao,
     verificarVitoria,
-    mostrarMensagem
+    mostrarMensagem,
+    avaliarCondicaoLogica,
+    executarBlocoLogico
 };
