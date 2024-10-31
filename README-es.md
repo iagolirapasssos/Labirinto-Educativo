@@ -5,6 +5,8 @@
 ![HTML5](https://img.shields.io/badge/HTML5-%23E34F26.svg?logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-%231572B6.svg?logo=css3&logoColor=white)
 
+[Português](./README-pt.md) | [English](./README-en.md) | [Español](./README-es.md)
+
 El Laberinto Educativo es una aplicación web interactiva que permite a los usuarios programar un automóvil para navegar a través de un laberinto utilizando bloques de programación visual. Inspirado en plataformas como Scratch, este proyecto tiene como objetivo enseñar conceptos de lógica de programación de una manera divertida e intuitiva.
 
 ## 📝 Descripción
