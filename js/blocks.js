@@ -156,12 +156,37 @@ function atualizarBlocosConfig() {
             texto: i18nThemeManager.translate('blocks.emitTone'),
             cor: '#FF9800',
             temContainer: false,
-            input: {
-                tipo: 'number',
-                min: 20,
-                max: 20000,
-                valor: 440
-            }
+            inputs: {
+                frequencia: {
+                    tipo: 'number',
+                    min: 20,
+                    max: 20000,
+                    valor: 440,
+                    label: 'Frequência',
+                    suffix: 'Hz'
+                },
+                duracao: {
+                    tipo: 'number',
+                    min: 100,
+                    max: 5000,
+                    valor: 1000,
+                    label: 'Duração',
+                    suffix: 'ms'
+                },
+                volume: {
+                    tipo: 'range',
+                    min: 0,
+                    max: 100,
+                    valor: 50,
+                    label: 'Volume',
+                    suffix: '%'
+                }
+            },
+            presets: [
+                { nome: 'Dó', frequencia: 262 },
+                { nome: 'Mi', frequencia: 330 },
+                { nome: 'Sol', frequencia: 392 }
+            ]
         },
         {
             tipo: TIPOS_BLOCOS.EFEITOS,
@@ -354,79 +379,167 @@ class GerenciadorBlocos {
     }
 
     criarBloco(config) {
+    // Se for o bloco de tom, usar implementação específica
+    if (config.id === 'emitirTom') {
         const bloco = document.createElement('div');
-        bloco.className = `bloco bloco-${config.tipo}`;
+        bloco.className = `bloco bloco-${config.tipo} bloco-tom`;
         bloco.dataset.tipo = config.id;
-
-        if (config.retornaLogico) {
-            bloco.dataset.retornaLogico = "true";
-        }
-
         bloco.draggable = !this.touchSupported;
         bloco.style.backgroundColor = config.cor;
 
+        // Adicionar manipulador
         const handle = document.createElement('div');
         handle.className = 'bloco-handle';
         handle.innerHTML = '⋮';
         bloco.appendChild(handle);
 
+        // Container principal
         const conteudo = document.createElement('div');
         conteudo.className = 'bloco-conteudo';
 
-        const span = document.createElement('span');
-        span.textContent = config.texto;
-        conteudo.appendChild(span);
+        // Título do bloco
+        const titulo = document.createElement('span');
+        titulo.textContent = config.texto;
+        conteudo.appendChild(titulo);
 
-        if (config.input) {
-            const input = document.createElement('input');
-            input.type = config.input.tipo;
-            input.min = config.input.min;
-            input.max = config.input.max;
-            input.value = config.input.valor;
-            input.className = 'touch-input';
+        // Container para inputs
+        const inputsContainer = document.createElement('div');
+        inputsContainer.className = 'inputs-container';
+
+        // Criar inputs
+        Object.entries(config.inputs).forEach(([key, input]) => {
+            const grupo = document.createElement('div');
+            grupo.className = 'input-group';
+
+            const label = document.createElement('label');
+            label.textContent = input.label;
+            grupo.appendChild(label);
+
+            const inputEl = document.createElement('input');
+            inputEl.type = input.tipo;
+            inputEl.min = input.min;
+            inputEl.max = input.max;
+            inputEl.value = input.valor;
+            inputEl.className = 'touch-input';
             
-            input.addEventListener('mousedown', e => e.stopPropagation());
-            input.addEventListener('touchstart', e => e.stopPropagation());
+            // Prevenir propagação de eventos
+            inputEl.addEventListener('mousedown', e => e.stopPropagation());
+            inputEl.addEventListener('touchstart', e => e.stopPropagation());
             
-            conteudo.appendChild(document.createTextNode(' '));
-            conteudo.appendChild(input);
-            
-            const unidade = this.getUnidade(config.id);
-            if (unidade) {
-                conteudo.appendChild(document.createTextNode(unidade));
+            grupo.appendChild(inputEl);
+
+            if (input.suffix) {
+                const suffix = document.createElement('span');
+                suffix.className = 'input-suffix';
+                suffix.textContent = input.suffix;
+                grupo.appendChild(suffix);
             }
-        }
 
-        if (config.select) {
-            const select = document.createElement('select');
-            select.className = 'touch-select';
+            inputsContainer.appendChild(grupo);
+        });
+
+        // Adicionar presets de tom
+        if (config.presets) {
+            const presetsContainer = document.createElement('div');
+            presetsContainer.className = 'tone-presets';
             
-            select.addEventListener('mousedown', e => e.stopPropagation());
-            select.addEventListener('touchstart', e => e.stopPropagation());
-            
-            config.select.opcoes.forEach(opcao => {
-                const option = document.createElement('option');
-                option.value = opcao;
-                option.textContent = opcao;
-                select.appendChild(option);
+            config.presets.forEach(preset => {
+                const button = document.createElement('button');
+                button.className = 'tone-preset';
+                button.textContent = preset.nome;
+                button.onclick = (e) => {
+                    e.stopPropagation();
+                    const freqInput = inputsContainer.querySelector('input[type="number"]');
+                    if (freqInput) {
+                        freqInput.value = preset.frequencia;
+                    }
+                };
+                presetsContainer.appendChild(button);
             });
-            conteudo.appendChild(document.createTextNode(' '));
-            conteudo.appendChild(select);
+
+            inputsContainer.appendChild(presetsContainer);
         }
 
+        conteudo.appendChild(inputsContainer);
         bloco.appendChild(conteudo);
 
-        if (config.temContainer) {
-            const container = document.createElement('div');
-            container.className = 'bloco-container drop-zone';
-            const placeholder = document.createElement('div');
-            placeholder.className = 'container-placeholder';
-            placeholder.textContent = i18nThemeManager.translate('interface.dragHere');
-            container.appendChild(placeholder);
-            bloco.appendChild(container);
-        }
+        return bloco;
+    }
 
-        if (config.temContainerLogico) {
+    // Implementação existente para outros blocos
+    const bloco = document.createElement('div');
+    bloco.className = `bloco bloco-${config.tipo}`;
+    bloco.dataset.tipo = config.id;
+
+    if (config.retornaLogico) {
+        bloco.dataset.retornaLogico = "true";
+    }
+
+    bloco.draggable = !this.touchSupported;
+    bloco.style.backgroundColor = config.cor;
+
+    const handle = document.createElement('div');
+    handle.className = 'bloco-handle';
+    handle.innerHTML = '⋮';
+    bloco.appendChild(handle);
+
+    const conteudo = document.createElement('div');
+    conteudo.className = 'bloco-conteudo';
+
+    const span = document.createElement('span');
+    span.textContent = config.texto;
+    conteudo.appendChild(span);
+
+    if (config.input) {
+        const input = document.createElement('input');
+        input.type = config.input.tipo;
+        input.min = config.input.min;
+        input.max = config.input.max;
+        input.value = config.input.valor;
+        input.className = 'touch-input';
+        
+        input.addEventListener('mousedown', e => e.stopPropagation());
+        input.addEventListener('touchstart', e => e.stopPropagation());
+        
+        conteudo.appendChild(document.createTextNode(' '));
+        conteudo.appendChild(input);
+        
+        const unidade = this.getUnidade(config.id);
+        if (unidade) {
+            conteudo.appendChild(document.createTextNode(unidade));
+        }
+    }
+
+    if (config.select) {
+        const select = document.createElement('select');
+        select.className = 'touch-select';
+        
+        select.addEventListener('mousedown', e => e.stopPropagation());
+        select.addEventListener('touchstart', e => e.stopPropagation());
+        
+        config.select.opcoes.forEach(opcao => {
+            const option = document.createElement('option');
+            option.value = opcao;
+            option.textContent = opcao;
+            select.appendChild(option);
+        });
+        conteudo.appendChild(document.createTextNode(' '));
+        conteudo.appendChild(select);
+    }
+
+    bloco.appendChild(conteudo);
+
+    if (config.temContainer) {
+        const container = document.createElement('div');
+        container.className = 'bloco-container drop-zone';
+        const placeholder = document.createElement('div');
+        placeholder.className = 'container-placeholder';
+        placeholder.textContent = i18nThemeManager.translate('interface.dragHere');
+        container.appendChild(placeholder);
+        bloco.appendChild(container);
+    }
+
+    if (config.temContainerLogico) {
         const containerLogico = document.createElement('div');
         containerLogico.className = 'bloco-container-logico drop-zone';
         
@@ -462,8 +575,8 @@ class GerenciadorBlocos {
         });
     }
 
-        return bloco;
-    }
+    return bloco;
+}
 
     getUnidade(id) {
         switch(id) {
@@ -1250,6 +1363,92 @@ class GerenciadorBlocos {
             });
         }
 
+        // Caso especial para o bloco de tom
+        if (config.id === 'emitirTom') {
+            const bloco = document.createElement('div');
+            bloco.className = `bloco bloco-${config.tipo} bloco-tom`;
+            bloco.dataset.tipo = config.id;
+            bloco.draggable = !this.touchSupported;
+            bloco.style.backgroundColor = config.cor;
+
+            // Adicionar manipulador
+            const handle = document.createElement('div');
+            handle.className = 'bloco-handle';
+            handle.innerHTML = '⋮';
+            bloco.appendChild(handle);
+
+            // Container principal
+            const conteudo = document.createElement('div');
+            conteudo.className = 'bloco-conteudo';
+
+            // Título do bloco
+            const titulo = document.createElement('span');
+            titulo.textContent = config.texto;
+            conteudo.appendChild(titulo);
+
+            // Container para inputs
+            const inputsContainer = document.createElement('div');
+            inputsContainer.className = 'inputs-container';
+
+            // Criar inputs
+            Object.entries(config.inputs).forEach(([key, input]) => {
+                const grupo = document.createElement('div');
+                grupo.className = 'input-group';
+
+                const label = document.createElement('label');
+                label.textContent = input.label;
+                grupo.appendChild(label);
+
+                const inputEl = document.createElement('input');
+                inputEl.type = input.tipo;
+                inputEl.min = input.min;
+                inputEl.max = input.max;
+                inputEl.value = input.valor;
+                inputEl.className = 'touch-input';
+                
+                // Prevenir propagação de eventos
+                inputEl.addEventListener('mousedown', e => e.stopPropagation());
+                inputEl.addEventListener('touchstart', e => e.stopPropagation());
+                
+                grupo.appendChild(inputEl);
+
+                if (input.suffix) {
+                    const suffix = document.createElement('span');
+                    suffix.className = 'input-suffix';
+                    suffix.textContent = input.suffix;
+                    grupo.appendChild(suffix);
+                }
+
+                inputsContainer.appendChild(grupo);
+            });
+
+            // Adicionar presets de tom
+            if (config.presets) {
+                const presetsContainer = document.createElement('div');
+                presetsContainer.className = 'tone-presets';
+                
+                config.presets.forEach(preset => {
+                    const button = document.createElement('button');
+                    button.className = 'tone-preset';
+                    button.textContent = preset.nome;
+                    button.onclick = (e) => {
+                        e.stopPropagation();
+                        const freqInput = inputsContainer.querySelector('input[type="number"]');
+                        if (freqInput) {
+                            freqInput.value = preset.frequencia;
+                        }
+                    };
+                    presetsContainer.appendChild(button);
+                });
+
+                inputsContainer.appendChild(presetsContainer);
+            }
+
+            conteudo.appendChild(inputsContainer);
+            bloco.appendChild(conteudo);
+
+            return bloco;
+        }
         return bloco;   
     }
 }

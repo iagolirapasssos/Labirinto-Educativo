@@ -416,13 +416,14 @@ async function animarEspelhamento(carro) {
 }
 
 // Funções de áudio
+// Funções de áudio atualizadas
 function iniciarAudioContext() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 }
 
-async function iniciarAudio(frequencia) {
+async function iniciarAudio(frequencia, volume = 0.5) {
     try {
         iniciarAudioContext();
         
@@ -438,15 +439,18 @@ async function iniciarAudio(frequencia) {
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(frequencia, audioContext.currentTime);
         
-        // Fade in suave
+        // Fade in suave com volume personalizado
         gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.1);
+        gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.1);
 
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         oscillator.start();
 
-        const msg = i18nThemeManager.translate('messages.audio.playing', { frequency: frequencia });
+        const msg = i18nThemeManager.translate('messages.audio.playing', { 
+            frequency: frequencia,
+            volume: Math.round(volume * 100)
+        });
         mostrarMensagem(msg, 'info');
     } catch (erro) {
         console.error('Erro ao iniciar áudio:', erro);
@@ -456,34 +460,40 @@ async function iniciarAudio(frequencia) {
 }
 
 async function pararAudio() {
-    if (!oscillator) {
-        const msg = i18nThemeManager.translate('messages.error.noAudio');
-        mostrarMensagem(msg, 'error');
-        return;
+    if (!oscillator || !gainNode) {
+        return; // Retorna silenciosamente se não houver áudio tocando
     }
 
     try {
         // Fade out suave
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+        await gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
         
-        setTimeout(() => {
-            oscillator.stop();
-            oscillator.disconnect();
-            gainNode.disconnect();
-            oscillator = null;
-            gainNode = null;
-        }, 100);
+        // Esperar o fade out completar antes de parar
+        await new Promise(resolve => {
+            setTimeout(() => {
+                try {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                    gainNode.disconnect();
+                } catch (e) {
+                    console.log('Oscilador já parado');
+                }
+                oscillator = null;
+                gainNode = null;
+                resolve();
+            }, 100);
+        });
 
-        const msg = i18nThemeManager.translate('messages.audio.stopped');
-        mostrarMensagem(msg, 'info');
+        // Não mostrar mensagem aqui pois pode ser uma parada automática
     } catch (erro) {
         console.error('Erro ao parar áudio:', erro);
-        const msg = i18nThemeManager.translate('messages.error.audio');
-        mostrarMensagem(msg, 'error');
+        oscillator = null;
+        gainNode = null;
     }
 }
 
 // Execução do programa
+// Atualizar a função executarPrograma para garantir que o áudio seja parado corretamente
 async function executarPrograma() {
     if (estado.executandoPrograma) return;
 
@@ -518,8 +528,10 @@ async function executarPrograma() {
         console.error('Erro na execução:', erro);
         mostrarMensagem(erro.message, 'error');
     } finally {
-        await pararAudio();
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Garantir que o áudio seja parado antes de finalizar
+        if (oscillator || gainNode) {
+            await pararAudio();
+        }
         finalizarExecucao();
     }
 }
@@ -579,6 +591,7 @@ async function executarBloco(bloco) {
     if (!estado.executandoPrograma || estado.pausado) return;
 
     const tipo = bloco.dataset.tipo;
+    bloco.classList.add('executando');
 
     try {
         // Destacar bloco sendo executado
@@ -665,13 +678,27 @@ async function executarBloco(bloco) {
                 await new Promise(resolve => setTimeout(resolve, milisegundos));
                 break;
             case 'emitirTom':
-                const freq = parseInt(bloco.querySelector('input').value) || 440;
-                await iniciarAudio(freq);
-                await new Promise(resolve => setTimeout(resolve, 300));
+                const inputs = bloco.querySelectorAll('input');
+                const freq = parseInt(inputs[0].value) || 440;
+                const duracao = parseInt(inputs[1].value) || 1000;
+                const volume = (parseInt(inputs[2].value) || 50) / 100;
+                
+                // Parar qualquer som anterior se existir
+                if (oscillator || gainNode) {
+                    await pararAudio();
+                }
+                
+                await iniciarAudio(freq, volume);
+                await new Promise(resolve => setTimeout(resolve, duracao));
+                if (oscillator) { // Verificar se ainda existe um oscillator antes de parar
+                    await pararAudio();
+                }
                 break;
             case 'pararTom':
-                await pararAudio();
-                await new Promise(resolve => setTimeout(resolve, 300));
+                if (oscillator || gainNode) {
+                    await pararAudio();
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
                 break;
             case 'seLogico':
                 const containerLogico = bloco.querySelector('.bloco-container-logico');

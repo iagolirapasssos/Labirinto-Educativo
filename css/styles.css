@@ -203,6 +203,99 @@
     margin-right: 5px;
 }
 
+/* Estilos para o bloco de tom */
+.bloco-tom {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bloco-tom .input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.bloco-tom label {
+    font-size: 0.9em;
+    opacity: 0.9;
+    min-width: 70px;
+}
+
+.bloco-tom input {
+    width: 80px !important;
+    text-align: right;
+}
+
+.bloco-tom .input-suffix {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-left: 2px;
+}
+
+/* Range slider personalizado */
+.bloco-tom input[type="range"] {
+    -webkit-appearance: none;
+    width: 100px !important;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    padding: 0;
+    margin: 0;
+}
+
+.bloco-tom input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.bloco-tom input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.bloco-tom input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: white;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.bloco-tom input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Presets de tom */
+.bloco-tom .tone-presets {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.bloco-tom .tone-preset {
+    padding: 2px 6px;
+    font-size: 0.8em;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bloco-tom .tone-preset:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 #programa .bloco-emitirTom::before {
     content: '🔊';
     margin-right: 5px;
