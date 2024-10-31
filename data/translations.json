@@ -47,6 +47,7 @@
       "condition": "Condição",
       "checkWallRight": "Verificar Parede Direita",
       "checkWallLeft": "Verificar Parede Esquerda",
+      "checkWallFront": "Verificar Parede Frente",
       "checkWallBack": "Verificar Parede Trás",
       "returnBoolean": "Retorna Booleano"
     },
@@ -161,6 +162,7 @@
       "checkWallRight": "Check Right Wall",
       "checkWallLeft": "Check Left Wall",
       "checkWallBack": "Check Back Wall",
+      "checkWallFront": "Check Front Wall",
       "returnBoolean": "Returns Boolean"
     },
     "interface": {
@@ -261,6 +263,7 @@
       "checkWallRight": "Verificar Pared Derecha",
       "checkWallLeft": "Verificar Pared Izquierda",
       "checkWallBack": "Verificar Pared Atrás",
+      "checkWallFront": "Verificar Pared Frontal",
       "returnBoolean": "Retorna Booleano"
     },
     "interface": {

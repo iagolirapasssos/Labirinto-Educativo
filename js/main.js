@@ -518,6 +518,8 @@ async function executarPrograma() {
         console.error('Erro na execução:', erro);
         mostrarMensagem(erro.message, 'error');
     } finally {
+        await pararAudio();
+        await new Promise(resolve => setTimeout(resolve, 300));
         finalizarExecucao();
     }
 }
@@ -541,7 +543,8 @@ async function executarBlocoLogico(bloco) {
             const containerLogico = bloco.querySelector('.bloco-container-logico');
             const blocoLogico = containerLogico?.querySelector('.bloco');
             return await avaliarCondicaoLogica(blocoLogico);
-            
+        case 'verificarParedeFrente':
+            return verificarColisao(novaPosX, novaPosY);
         case 'verificarParedeDireita':
         case 'verificarParedeEsquerda':
         case 'verificarParedeTras':

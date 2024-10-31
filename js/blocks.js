@@ -205,6 +205,12 @@ function atualizarBlocosConfig() {
         // Verificadores de Parede Lógicos
         {
             tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarParedeFrente',
+            texto: i18nThemeManager.translate('blocks.checkWallFront'),
+            cor: '#795548',
+            retornaLogico: true
+        },{
+            tipo: TIPOS_BLOCOS.LOGICO,
             id: 'verificarParedeDireita',
             texto: i18nThemeManager.translate('blocks.checkWallRight'),
             cor: '#795548',
