@@ -98,14 +98,47 @@
 }
 
 /* Zona de Drop */
+/* Estilos para permutação de blocos */
+.drop-indicator {
+    height: 4px;
+    background-color: #2196F3;
+    border-radius: 2px;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.drop-indicator.active {
+    opacity: 1;
+}
+
 .drop-zone {
-    min-height: 100px;
-    border: #ccc dashed 2px;
-    border-radius: 5px;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
+    position: relative;
+}
+
+.drop-zone.dropping-above::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #2196F3;
+    border-radius: 2px;
+    z-index: 1;
+}
+
+.drop-zone.dropping-below::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #2196F3;
+    border-radius: 2px;
+    z-index: 1;
 }
 
 .drop-zone.drag-over {

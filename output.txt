@@ -99,14 +99,47 @@ css/styles.css:
 }
 
 /* Zona de Drop */
+/* Estilos para permutação de blocos */
+.drop-indicator {
+    height: 4px;
+    background-color: #2196F3;
+    border-radius: 2px;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.drop-indicator.active {
+    opacity: 1;
+}
+
 .drop-zone {
-    min-height: 100px;
-    border: #ccc dashed 2px;
-    border-radius: 5px;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
+    position: relative;
+}
+
+.drop-zone.dropping-above::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #2196F3;
+    border-radius: 2px;
+    z-index: 1;
+}
+
+.drop-zone.dropping-below::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #2196F3;
+    border-radius: 2px;
+    z-index: 1;
 }
 
 .drop-zone.drag-over {
@@ -202,6 +235,99 @@ css/styles.css:
 #programa .bloco-temParedeTras::before {
     content: '🛑';
     margin-right: 5px;
+}
+
+/* Estilos para o bloco de tom */
+.bloco-tom {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bloco-tom .input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.bloco-tom label {
+    font-size: 0.9em;
+    opacity: 0.9;
+    min-width: 70px;
+}
+
+.bloco-tom input {
+    width: 80px !important;
+    text-align: right;
+}
+
+.bloco-tom .input-suffix {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-left: 2px;
+}
+
+/* Range slider personalizado */
+.bloco-tom input[type="range"] {
+    -webkit-appearance: none;
+    width: 100px !important;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    padding: 0;
+    margin: 0;
+}
+
+.bloco-tom input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.bloco-tom input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.bloco-tom input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: white;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.bloco-tom input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Presets de tom */
+.bloco-tom .tone-presets {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.bloco-tom .tone-preset {
+    padding: 2px 6px;
+    font-size: 0.8em;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bloco-tom .tone-preset:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 #programa .bloco-emitirTom::before {
@@ -1396,6 +1522,7 @@ data/translations.json:
       "condition": "Condição",
       "checkWallRight": "Verificar Parede Direita",
       "checkWallLeft": "Verificar Parede Esquerda",
+      "checkWallFront": "Verificar Parede Frente",
       "checkWallBack": "Verificar Parede Trás",
       "returnBoolean": "Retorna Booleano"
     },
@@ -1510,6 +1637,7 @@ data/translations.json:
       "checkWallRight": "Check Right Wall",
       "checkWallLeft": "Check Left Wall",
       "checkWallBack": "Check Back Wall",
+      "checkWallFront": "Check Front Wall",
       "returnBoolean": "Returns Boolean"
     },
     "interface": {
@@ -1610,6 +1738,7 @@ data/translations.json:
       "checkWallRight": "Verificar Pared Derecha",
       "checkWallLeft": "Verificar Pared Izquierda",
       "checkWallBack": "Verificar Pared Atrás",
+      "checkWallFront": "Verificar Pared Frontal",
       "returnBoolean": "Retorna Booleano"
     },
     "interface": {
@@ -1975,12 +2104,37 @@ function atualizarBlocosConfig() {
             texto: i18nThemeManager.translate('blocks.emitTone'),
             cor: '#FF9800',
             temContainer: false,
-            input: {
-                tipo: 'number',
-                min: 20,
-                max: 20000,
-                valor: 440
-            }
+            inputs: {
+                frequencia: {
+                    tipo: 'number',
+                    min: 20,
+                    max: 20000,
+                    valor: 440,
+                    label: 'Frequência',
+                    suffix: 'Hz'
+                },
+                duracao: {
+                    tipo: 'number',
+                    min: 100,
+                    max: 5000,
+                    valor: 1000,
+                    label: 'Duração',
+                    suffix: 'ms'
+                },
+                volume: {
+                    tipo: 'range',
+                    min: 0,
+                    max: 100,
+                    valor: 50,
+                    label: 'Volume',
+                    suffix: '%'
+                }
+            },
+            presets: [
+                { nome: 'Dó', frequencia: 262 },
+                { nome: 'Mi', frequencia: 330 },
+                { nome: 'Sol', frequencia: 392 }
+            ]
         },
         {
             tipo: TIPOS_BLOCOS.EFEITOS,
@@ -2023,6 +2177,12 @@ function atualizarBlocosConfig() {
 
         // Verificadores de Parede Lógicos
         {
+            tipo: TIPOS_BLOCOS.LOGICO,
+            id: 'verificarParedeFrente',
+            texto: i18nThemeManager.translate('blocks.checkWallFront'),
+            cor: '#795548',
+            retornaLogico: true
+        },{
             tipo: TIPOS_BLOCOS.LOGICO,
             id: 'verificarParedeDireita',
             texto: i18nThemeManager.translate('blocks.checkWallRight'),
@@ -2113,6 +2273,100 @@ class GerenciadorBlocos {
         });
     }
 
+    // Método auxiliar para melhorar a visualização durante o arraste
+    // Atualizar o método configurarDropZoneUnica para incluir a verificação de container
+    configurarDropZoneUnica(zone) {
+        if (!zone.dataset.dropzoneConfigured) {
+            let lastHighlightedBlock = null;
+
+            const clearHighlights = () => {
+                if (lastHighlightedBlock) {
+                    lastHighlightedBlock.classList.remove('dropping-above', 'dropping-below');
+                    lastHighlightedBlock = null;
+                }
+                zone.classList.remove('drag-over');
+            };
+
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!this.blocoArrastado) return;
+
+                const dropZone = e.target.closest('.drop-zone');
+                if (!dropZone) return;
+
+                // Verificar se é um container e se está em Meu Programa
+                const isContainerDrop = dropZone.classList.contains('bloco-container') || 
+                                      dropZone.classList.contains('bloco-container-logico');
+                const isInMeuPrograma = dropZone.closest('#sequencia-blocos') !== null;
+
+                // Se for um container e não estiver em Meu Programa, não mostrar indicador de drop
+                if (isContainerDrop && !isInMeuPrograma) {
+                    clearHighlights();
+                    e.dataTransfer.dropEffect = 'none';
+                    return;
+                }
+
+                clearHighlights();
+
+                const mouseY = e.clientY;
+                const blocos = Array.from(dropZone.children).filter(el => 
+                    el.classList.contains('bloco') && el !== this.blocoArrastado
+                );
+
+                if (blocos.length && !isContainerDrop) {
+                    let targetBlock = null;
+                    let position = 'above';
+
+                    for (const block of blocos) {
+                        const rect = block.getBoundingClientRect();
+                        const blockMiddle = rect.top + (rect.height / 2);
+                        
+                        if (mouseY <= blockMiddle) {
+                            targetBlock = block;
+                            position = 'above';
+                            break;
+                        } else if (mouseY > blockMiddle && mouseY <= rect.bottom) {
+                            targetBlock = block;
+                            position = 'below';
+                            break;
+                        }
+                    }
+
+                    if (!targetBlock && blocos.length > 0) {
+                        targetBlock = blocos[blocos.length - 1];
+                        position = 'below';
+                    }
+
+                    if (targetBlock) {
+                        lastHighlightedBlock = targetBlock;
+                        targetBlock.classList.add(`dropping-${position}`);
+                    }
+                } else if (isInMeuPrograma || !isContainerDrop) {
+                    dropZone.classList.add('drag-over');
+                }
+
+                e.dataTransfer.dropEffect = this.isBlocoDisponivel(this.blocoArrastado) ? 'copy' : 'move';
+            });
+
+            zone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                clearHighlights();
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                clearHighlights();
+                this.handleDrop(e);
+            });
+
+            zone.dataset.dropzoneConfigured = 'true';
+        }
+    }
+    
     inicializarBlocos() {
         const container = document.getElementById('blocos-disponiveis');
         container.innerHTML = '';
@@ -2167,79 +2421,167 @@ class GerenciadorBlocos {
     }
 
     criarBloco(config) {
+    // Se for o bloco de tom, usar implementação específica
+    if (config.id === 'emitirTom') {
         const bloco = document.createElement('div');
-        bloco.className = `bloco bloco-${config.tipo}`;
+        bloco.className = `bloco bloco-${config.tipo} bloco-tom`;
         bloco.dataset.tipo = config.id;
-
-        if (config.retornaLogico) {
-            bloco.dataset.retornaLogico = "true";
-        }
-
         bloco.draggable = !this.touchSupported;
         bloco.style.backgroundColor = config.cor;
 
+        // Adicionar manipulador
         const handle = document.createElement('div');
         handle.className = 'bloco-handle';
         handle.innerHTML = '⋮';
         bloco.appendChild(handle);
 
+        // Container principal
         const conteudo = document.createElement('div');
         conteudo.className = 'bloco-conteudo';
 
-        const span = document.createElement('span');
-        span.textContent = config.texto;
-        conteudo.appendChild(span);
+        // Título do bloco
+        const titulo = document.createElement('span');
+        titulo.textContent = config.texto;
+        conteudo.appendChild(titulo);
 
-        if (config.input) {
-            const input = document.createElement('input');
-            input.type = config.input.tipo;
-            input.min = config.input.min;
-            input.max = config.input.max;
-            input.value = config.input.valor;
-            input.className = 'touch-input';
+        // Container para inputs
+        const inputsContainer = document.createElement('div');
+        inputsContainer.className = 'inputs-container';
+
+        // Criar inputs
+        Object.entries(config.inputs).forEach(([key, input]) => {
+            const grupo = document.createElement('div');
+            grupo.className = 'input-group';
+
+            const label = document.createElement('label');
+            label.textContent = input.label;
+            grupo.appendChild(label);
+
+            const inputEl = document.createElement('input');
+            inputEl.type = input.tipo;
+            inputEl.min = input.min;
+            inputEl.max = input.max;
+            inputEl.value = input.valor;
+            inputEl.className = 'touch-input';
             
-            input.addEventListener('mousedown', e => e.stopPropagation());
-            input.addEventListener('touchstart', e => e.stopPropagation());
+            // Prevenir propagação de eventos
+            inputEl.addEventListener('mousedown', e => e.stopPropagation());
+            inputEl.addEventListener('touchstart', e => e.stopPropagation());
             
-            conteudo.appendChild(document.createTextNode(' '));
-            conteudo.appendChild(input);
-            
-            const unidade = this.getUnidade(config.id);
-            if (unidade) {
-                conteudo.appendChild(document.createTextNode(unidade));
+            grupo.appendChild(inputEl);
+
+            if (input.suffix) {
+                const suffix = document.createElement('span');
+                suffix.className = 'input-suffix';
+                suffix.textContent = input.suffix;
+                grupo.appendChild(suffix);
             }
-        }
 
-        if (config.select) {
-            const select = document.createElement('select');
-            select.className = 'touch-select';
+            inputsContainer.appendChild(grupo);
+        });
+
+        // Adicionar presets de tom
+        if (config.presets) {
+            const presetsContainer = document.createElement('div');
+            presetsContainer.className = 'tone-presets';
             
-            select.addEventListener('mousedown', e => e.stopPropagation());
-            select.addEventListener('touchstart', e => e.stopPropagation());
-            
-            config.select.opcoes.forEach(opcao => {
-                const option = document.createElement('option');
-                option.value = opcao;
-                option.textContent = opcao;
-                select.appendChild(option);
+            config.presets.forEach(preset => {
+                const button = document.createElement('button');
+                button.className = 'tone-preset';
+                button.textContent = preset.nome;
+                button.onclick = (e) => {
+                    e.stopPropagation();
+                    const freqInput = inputsContainer.querySelector('input[type="number"]');
+                    if (freqInput) {
+                        freqInput.value = preset.frequencia;
+                    }
+                };
+                presetsContainer.appendChild(button);
             });
-            conteudo.appendChild(document.createTextNode(' '));
-            conteudo.appendChild(select);
+
+            inputsContainer.appendChild(presetsContainer);
         }
 
+        conteudo.appendChild(inputsContainer);
         bloco.appendChild(conteudo);
 
-        if (config.temContainer) {
-            const container = document.createElement('div');
-            container.className = 'bloco-container drop-zone';
-            const placeholder = document.createElement('div');
-            placeholder.className = 'container-placeholder';
-            placeholder.textContent = i18nThemeManager.translate('interface.dragHere');
-            container.appendChild(placeholder);
-            bloco.appendChild(container);
-        }
+        return bloco;
+    }
 
-        if (config.temContainerLogico) {
+    // Implementação existente para outros blocos
+    const bloco = document.createElement('div');
+    bloco.className = `bloco bloco-${config.tipo}`;
+    bloco.dataset.tipo = config.id;
+
+    if (config.retornaLogico) {
+        bloco.dataset.retornaLogico = "true";
+    }
+
+    bloco.draggable = !this.touchSupported;
+    bloco.style.backgroundColor = config.cor;
+
+    const handle = document.createElement('div');
+    handle.className = 'bloco-handle';
+    handle.innerHTML = '⋮';
+    bloco.appendChild(handle);
+
+    const conteudo = document.createElement('div');
+    conteudo.className = 'bloco-conteudo';
+
+    const span = document.createElement('span');
+    span.textContent = config.texto;
+    conteudo.appendChild(span);
+
+    if (config.input) {
+        const input = document.createElement('input');
+        input.type = config.input.tipo;
+        input.min = config.input.min;
+        input.max = config.input.max;
+        input.value = config.input.valor;
+        input.className = 'touch-input';
+        
+        input.addEventListener('mousedown', e => e.stopPropagation());
+        input.addEventListener('touchstart', e => e.stopPropagation());
+        
+        conteudo.appendChild(document.createTextNode(' '));
+        conteudo.appendChild(input);
+        
+        const unidade = this.getUnidade(config.id);
+        if (unidade) {
+            conteudo.appendChild(document.createTextNode(unidade));
+        }
+    }
+
+    if (config.select) {
+        const select = document.createElement('select');
+        select.className = 'touch-select';
+        
+        select.addEventListener('mousedown', e => e.stopPropagation());
+        select.addEventListener('touchstart', e => e.stopPropagation());
+        
+        config.select.opcoes.forEach(opcao => {
+            const option = document.createElement('option');
+            option.value = opcao;
+            option.textContent = opcao;
+            select.appendChild(option);
+        });
+        conteudo.appendChild(document.createTextNode(' '));
+        conteudo.appendChild(select);
+    }
+
+    bloco.appendChild(conteudo);
+
+    if (config.temContainer) {
+        const container = document.createElement('div');
+        container.className = 'bloco-container drop-zone';
+        const placeholder = document.createElement('div');
+        placeholder.className = 'container-placeholder';
+        placeholder.textContent = i18nThemeManager.translate('interface.dragHere');
+        container.appendChild(placeholder);
+        bloco.appendChild(container);
+    }
+
+    if (config.temContainerLogico) {
         const containerLogico = document.createElement('div');
         containerLogico.className = 'bloco-container-logico drop-zone';
         
@@ -2275,8 +2617,8 @@ class GerenciadorBlocos {
         });
     }
 
-        return bloco;
-    }
+    return bloco;
+}
 
     getUnidade(id) {
         switch(id) {
@@ -2299,30 +2641,144 @@ class GerenciadorBlocos {
         });
     }
 
-    configurarDropZoneUnica(zone) {
-        if (!zone.dataset.dropzoneConfigured) {
-            zone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (this.blocoArrastado) {
-                    this.atualizarDropZones(zone);
-                    e.dataTransfer.dropEffect = this.isBlocoDisponivel(this.blocoArrastado) ? 'copy' : 'move';
+    handleDrop(e) {
+        e.preventDefault();
+        const dropZone = e.target.closest('.drop-zone');
+        if (!dropZone || !this.blocoArrastado) return;
+
+        // Verificar se está tentando adicionar em um container
+        const isContainerDrop = dropZone.classList.contains('bloco-container') || 
+                              dropZone.classList.contains('bloco-container-logico');
+
+        // Verificar se está dentro de Meu Programa
+        const isInMeuPrograma = dropZone.closest('#sequencia-blocos') !== null;
+
+        // Se for um container e não estiver em Meu Programa, não permitir o drop
+        if (isContainerDrop && !isInMeuPrograma) {
+            dropZone.classList.remove('drag-over');
+            return;
+        }
+
+        // Limpar classes de indicação
+        dropZone.classList.remove('drag-over');
+
+        try {
+            const isFromAvailable = this.isBlocoDisponivel(this.blocoArrastado);
+            let novoBloco;
+
+            if (isFromAvailable) {
+                novoBloco = this.clonarBloco(this.blocoArrastado);
+            } else {
+                novoBloco = this.blocoArrastado;
+            }
+
+            // Remover estilos residuais do drag
+            novoBloco.style.position = '';
+            novoBloco.style.left = '';
+            novoBloco.style.top = '';
+            novoBloco.classList.remove('dragging');
+
+            if (!isContainerDrop) {
+                const mouseY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                // Encontrar todos os blocos válidos na dropzone
+                const blocos = Array.from(dropZone.children).filter(el => 
+                    el.classList.contains('bloco') && el !== novoBloco
+                );
+
+                if (blocos.length === 0) {
+                    dropZone.appendChild(novoBloco);
+                } else {
+                    // Encontrar o bloco alvo e sua posição
+                    let targetBlock = null;
+                    let insertBefore = true;
+
+                    for (const block of blocos) {
+                        const rect = block.getBoundingClientRect();
+                        const blockMiddle = rect.top + (rect.height / 2);
+                        
+                        if (mouseY <= blockMiddle) {
+                            targetBlock = block;
+                            insertBefore = true;
+                            break;
+                        } else if (mouseY > blockMiddle && mouseY <= rect.bottom) {
+                            targetBlock = block;
+                            insertBefore = false;
+                            break;
+                        }
+                    }
+
+                    // Se não encontrou um bloco específico, usar o último
+                    if (!targetBlock && blocos.length > 0) {
+                        targetBlock = blocos[blocos.length - 1];
+                        insertBefore = false;
+                    }
+
+                    // Realizar a troca de posições
+                    if (targetBlock) {
+                        const currentIndex = Array.from(dropZone.children).indexOf(novoBloco);
+                        const targetIndex = Array.from(dropZone.children).indexOf(targetBlock);
+
+                        // Se o bloco já está na dropzone
+                        if (currentIndex !== -1) {
+                            novoBloco.remove();
+                            
+                            if (insertBefore) {
+                                dropZone.insertBefore(novoBloco, targetBlock);
+                            } else {
+                                if (targetBlock.nextSibling) {
+                                    dropZone.insertBefore(novoBloco, targetBlock.nextSibling);
+                                } else {
+                                    dropZone.appendChild(novoBloco);
+                                }
+                            }
+                        } else {
+                            if (insertBefore) {
+                                dropZone.insertBefore(novoBloco, targetBlock);
+                            } else {
+                                if (targetBlock.nextSibling) {
+                                    dropZone.insertBefore(novoBloco, targetBlock.nextSibling);
+                                } else {
+                                    dropZone.appendChild(novoBloco);
+                                }
+                            }
+                        }
+                    } else {
+                        dropZone.appendChild(novoBloco);
+                    }
                 }
+            } else {
+                // Inserção em container (só permitido em Meu Programa)
+                const placeholder = dropZone.querySelector('.container-placeholder, .programa-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                dropZone.appendChild(novoBloco);
+            }
+
+            // Animar entrada
+            novoBloco.style.opacity = '0';
+            novoBloco.style.transform = 'translateY(-10px)';
+            requestAnimationFrame(() => {
+                novoBloco.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                novoBloco.style.opacity = '1';
+                novoBloco.style.transform = 'translateY(0)';
+                
+                novoBloco.addEventListener('transitionend', () => {
+                    novoBloco.style.transition = '';
+                }, { once: true });
             });
 
-            zone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                zone.classList.remove('drag-over');
-            });
-
-            zone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.handleDrop(e);
-            });
-
-            zone.dataset.dropzoneConfigured = 'true';
+            // Configurar drop zones para containers se necessário
+            if (novoBloco.querySelector('.drop-zone')) {
+                const containers = novoBloco.querySelectorAll('.drop-zone');
+                containers.forEach(container => {
+                    this.configurarDropZoneUnica(container);
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao soltar bloco:', error);
+            mostrarMensagem(i18nThemeManager.translate('messages.error.unexpected'), 'error');
         }
     }
 
@@ -2629,16 +3085,14 @@ class GerenciadorBlocos {
         const bloco = e.target.closest('.bloco');
         if (!bloco) return;
 
-        if (this.isBlocoDisponivel(bloco)) {
-            e.dataTransfer.effectAllowed = 'copy';
-        } else {
-            e.dataTransfer.effectAllowed = 'move';
-        }
-
-        this.blocoArrastado = bloco;
+        // Adicionar classe para identificar o bloco sendo arrastado
         bloco.classList.add('dragging');
-        e.dataTransfer.setData('text/plain', bloco.dataset.tipo);
-
+        
+        // Configurar dados do drag
+        e.dataTransfer.effectAllowed = this.isBlocoDisponivel(bloco) ? 'copy' : 'move';
+        this.blocoArrastado = bloco;
+        
+        // Configurar a imagem de drag
         const ghost = bloco.cloneNode(true);
         ghost.style.opacity = '0.7';
         ghost.style.position = 'absolute';
@@ -2646,6 +3100,12 @@ class GerenciadorBlocos {
         document.body.appendChild(ghost);
         e.dataTransfer.setDragImage(ghost, e.offsetX, e.offsetY);
         setTimeout(() => ghost.remove(), 0);
+
+        // Guardar dados do bloco para verificação de permissão de drop
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            tipo: bloco.dataset.tipo,
+            isFromAvailable: this.isBlocoDisponivel(bloco)
+        }));
     }
 
     handleDragEnd(e) {
@@ -2671,63 +3131,114 @@ class GerenciadorBlocos {
         const dropZone = e.target.closest('.drop-zone');
         if (!dropZone || !this.blocoArrastado) return;
 
-        // Remover classe drag-over
+        // Limpar classes de indicação
         dropZone.classList.remove('drag-over');
 
-        // Obter configuração do bloco
-        const tipoBloco = this.blocoArrastado.dataset.tipo;
-        const configBloco = BLOCOS_CONFIG.find(bloco => bloco.id === tipoBloco);
-        if (!configBloco) return;
-
-        // Verificar aninhamento permitido
-        if (!this.verificarAninhamentoPermitido(dropZone, configBloco)) {
-            mostrarMensagem(i18nThemeManager.translate('messages.error.nestedBlock'), 'error');
-            return;
-        }
-
         try {
-            // Determinar se o bloco vem da área de blocos disponíveis
             const isFromAvailable = this.isBlocoDisponivel(this.blocoArrastado);
             let novoBloco;
 
             if (isFromAvailable) {
-                // Se vier dos blocos disponíveis, criar uma cópia
                 novoBloco = this.clonarBloco(this.blocoArrastado);
             } else {
-                // Se não, mover o bloco existente
                 novoBloco = this.blocoArrastado;
             }
 
-            // Remover o placeholder se existir
-            const placeholder = dropZone.querySelector('.container-placeholder, .programa-placeholder');
-            if (placeholder) {
-                placeholder.remove();
-            }
-
-            // Certificar que o bloco não tenha estilos residuais do drag
+            // Remover estilos residuais do drag
             novoBloco.style.position = '';
             novoBloco.style.left = '';
             novoBloco.style.top = '';
             novoBloco.classList.remove('dragging');
 
-            // Adicionar o bloco à drop zone com animação
+            // Determinar se estamos inserindo em um container ou permutando
+            const isContainerDrop = dropZone.classList.contains('bloco-container') || 
+                                  dropZone.classList.contains('bloco-container-logico');
+
+            if (!isContainerDrop) {
+                // Obter a posição Y do mouse/toque
+                const mouseY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                // Encontrar todos os blocos na dropzone exceto o arrastado
+                const blocos = Array.from(dropZone.children).filter(el => 
+                    el.classList.contains('bloco') && el !== this.blocoArrastado
+                );
+
+                // Se não há outros blocos, apenas append
+                if (blocos.length === 0) {
+                    dropZone.appendChild(novoBloco);
+                    return;
+                }
+
+                // Encontrar o bloco mais próximo e a posição relativa
+                let closestBlock = null;
+                let insertBefore = true;
+                let minDistance = Infinity;
+
+                blocos.forEach(block => {
+                    const rect = block.getBoundingClientRect();
+                    const blockMiddle = rect.top + (rect.height / 2);
+                    const distance = Math.abs(mouseY - blockMiddle);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestBlock = block;
+                        insertBefore = mouseY < blockMiddle;
+                    }
+                });
+
+                // Se encontramos um bloco próximo
+                if (closestBlock) {
+                    const currentIndex = Array.from(dropZone.children).indexOf(novoBloco);
+                    const targetIndex = Array.from(dropZone.children).indexOf(closestBlock);
+                    
+                    // Remover o bloco da sua posição atual se já estiver na dropzone
+                    if (currentIndex !== -1) {
+                        novoBloco.remove();
+                    }
+
+                    // Inserir o bloco na nova posição
+                    if (insertBefore) {
+                        dropZone.insertBefore(novoBloco, closestBlock);
+                    } else {
+                        if (closestBlock.nextSibling) {
+                            dropZone.insertBefore(novoBloco, closestBlock.nextSibling);
+                        } else {
+                            dropZone.appendChild(novoBloco);
+                        }
+                    }
+                } else {
+                    // Se não encontrou bloco próximo, adiciona ao final
+                    dropZone.appendChild(novoBloco);
+                }
+            } else {
+                // Inserção em container
+                const placeholder = dropZone.querySelector('.container-placeholder, .programa-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                dropZone.appendChild(novoBloco);
+            }
+
+            // Animar entrada
             novoBloco.style.opacity = '0';
             novoBloco.style.transform = 'translateY(-10px)';
-            dropZone.appendChild(novoBloco);
-
-            // Aplicar animação de entrada
             requestAnimationFrame(() => {
                 novoBloco.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 novoBloco.style.opacity = '1';
                 novoBloco.style.transform = 'translateY(0)';
+                
+                // Limpar transição após a animação
+                novoBloco.addEventListener('transitionend', () => {
+                    novoBloco.style.transition = '';
+                }, { once: true });
             });
 
-            // Se for um bloco aninhável, configurar sua drop zone interna
-            if (configBloco.temContainer) {
-                const container = novoBloco.querySelector('.bloco-container');
-                if (container) {
+            // Configurar drop zones para containers se necessário
+            if (novoBloco.querySelector('.drop-zone')) {
+                const containers = novoBloco.querySelectorAll('.drop-zone');
+                containers.forEach(container => {
                     this.configurarDropZoneUnica(container);
-                }
+                });
             }
         } catch (error) {
             console.error('Erro ao soltar bloco:', error);
@@ -3063,6 +3574,92 @@ class GerenciadorBlocos {
             });
         }
 
+        // Caso especial para o bloco de tom
+        if (config.id === 'emitirTom') {
+            const bloco = document.createElement('div');
+            bloco.className = `bloco bloco-${config.tipo} bloco-tom`;
+            bloco.dataset.tipo = config.id;
+            bloco.draggable = !this.touchSupported;
+            bloco.style.backgroundColor = config.cor;
+
+            // Adicionar manipulador
+            const handle = document.createElement('div');
+            handle.className = 'bloco-handle';
+            handle.innerHTML = '⋮';
+            bloco.appendChild(handle);
+
+            // Container principal
+            const conteudo = document.createElement('div');
+            conteudo.className = 'bloco-conteudo';
+
+            // Título do bloco
+            const titulo = document.createElement('span');
+            titulo.textContent = config.texto;
+            conteudo.appendChild(titulo);
+
+            // Container para inputs
+            const inputsContainer = document.createElement('div');
+            inputsContainer.className = 'inputs-container';
+
+            // Criar inputs
+            Object.entries(config.inputs).forEach(([key, input]) => {
+                const grupo = document.createElement('div');
+                grupo.className = 'input-group';
+
+                const label = document.createElement('label');
+                label.textContent = input.label;
+                grupo.appendChild(label);
+
+                const inputEl = document.createElement('input');
+                inputEl.type = input.tipo;
+                inputEl.min = input.min;
+                inputEl.max = input.max;
+                inputEl.value = input.valor;
+                inputEl.className = 'touch-input';
+                
+                // Prevenir propagação de eventos
+                inputEl.addEventListener('mousedown', e => e.stopPropagation());
+                inputEl.addEventListener('touchstart', e => e.stopPropagation());
+                
+                grupo.appendChild(inputEl);
+
+                if (input.suffix) {
+                    const suffix = document.createElement('span');
+                    suffix.className = 'input-suffix';
+                    suffix.textContent = input.suffix;
+                    grupo.appendChild(suffix);
+                }
+
+                inputsContainer.appendChild(grupo);
+            });
+
+            // Adicionar presets de tom
+            if (config.presets) {
+                const presetsContainer = document.createElement('div');
+                presetsContainer.className = 'tone-presets';
+                
+                config.presets.forEach(preset => {
+                    const button = document.createElement('button');
+                    button.className = 'tone-preset';
+                    button.textContent = preset.nome;
+                    button.onclick = (e) => {
+                        e.stopPropagation();
+                        const freqInput = inputsContainer.querySelector('input[type="number"]');
+                        if (freqInput) {
+                            freqInput.value = preset.frequencia;
+                        }
+                    };
+                    presetsContainer.appendChild(button);
+                });
+
+                inputsContainer.appendChild(presetsContainer);
+            }
+
+            conteudo.appendChild(inputsContainer);
+            bloco.appendChild(conteudo);
+
+            return bloco;
+        }
         return bloco;   
     }
 }
@@ -3609,13 +4206,14 @@ async function animarEspelhamento(carro) {
 }
 
 // Funções de áudio
+// Funções de áudio atualizadas
 function iniciarAudioContext() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 }
 
-async function iniciarAudio(frequencia) {
+async function iniciarAudio(frequencia, volume = 0.5) {
     try {
         iniciarAudioContext();
         
@@ -3631,15 +4229,18 @@ async function iniciarAudio(frequencia) {
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(frequencia, audioContext.currentTime);
         
-        // Fade in suave
+        // Fade in suave com volume personalizado
         gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.1);
+        gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.1);
 
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         oscillator.start();
 
-        const msg = i18nThemeManager.translate('messages.audio.playing', { frequency: frequencia });
+        const msg = i18nThemeManager.translate('messages.audio.playing', { 
+            frequency: frequencia,
+            volume: Math.round(volume * 100)
+        });
         mostrarMensagem(msg, 'info');
     } catch (erro) {
         console.error('Erro ao iniciar áudio:', erro);
@@ -3649,34 +4250,40 @@ async function iniciarAudio(frequencia) {
 }
 
 async function pararAudio() {
-    if (!oscillator) {
-        const msg = i18nThemeManager.translate('messages.error.noAudio');
-        mostrarMensagem(msg, 'error');
-        return;
+    if (!oscillator || !gainNode) {
+        return; // Retorna silenciosamente se não houver áudio tocando
     }
 
     try {
         // Fade out suave
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+        await gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
         
-        setTimeout(() => {
-            oscillator.stop();
-            oscillator.disconnect();
-            gainNode.disconnect();
-            oscillator = null;
-            gainNode = null;
-        }, 100);
+        // Esperar o fade out completar antes de parar
+        await new Promise(resolve => {
+            setTimeout(() => {
+                try {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                    gainNode.disconnect();
+                } catch (e) {
+                    console.log('Oscilador já parado');
+                }
+                oscillator = null;
+                gainNode = null;
+                resolve();
+            }, 100);
+        });
 
-        const msg = i18nThemeManager.translate('messages.audio.stopped');
-        mostrarMensagem(msg, 'info');
+        // Não mostrar mensagem aqui pois pode ser uma parada automática
     } catch (erro) {
         console.error('Erro ao parar áudio:', erro);
-        const msg = i18nThemeManager.translate('messages.error.audio');
-        mostrarMensagem(msg, 'error');
+        oscillator = null;
+        gainNode = null;
     }
 }
 
 // Execução do programa
+// Atualizar a função executarPrograma para garantir que o áudio seja parado corretamente
 async function executarPrograma() {
     if (estado.executandoPrograma) return;
 
@@ -3711,6 +4318,10 @@ async function executarPrograma() {
         console.error('Erro na execução:', erro);
         mostrarMensagem(erro.message, 'error');
     } finally {
+        // Garantir que o áudio seja parado antes de finalizar
+        if (oscillator || gainNode) {
+            await pararAudio();
+        }
         finalizarExecucao();
     }
 }
@@ -3734,7 +4345,8 @@ async function executarBlocoLogico(bloco) {
             const containerLogico = bloco.querySelector('.bloco-container-logico');
             const blocoLogico = containerLogico?.querySelector('.bloco');
             return await avaliarCondicaoLogica(blocoLogico);
-            
+        case 'verificarParedeFrente':
+            return verificarColisao(novaPosX, novaPosY);
         case 'verificarParedeDireita':
         case 'verificarParedeEsquerda':
         case 'verificarParedeTras':
@@ -3769,6 +4381,7 @@ async function executarBloco(bloco) {
     if (!estado.executandoPrograma || estado.pausado) return;
 
     const tipo = bloco.dataset.tipo;
+    bloco.classList.add('executando');
 
     try {
         // Destacar bloco sendo executado
@@ -3855,13 +4468,27 @@ async function executarBloco(bloco) {
                 await new Promise(resolve => setTimeout(resolve, milisegundos));
                 break;
             case 'emitirTom':
-                const freq = parseInt(bloco.querySelector('input').value) || 440;
-                await iniciarAudio(freq);
-                await new Promise(resolve => setTimeout(resolve, 300));
+                const inputs = bloco.querySelectorAll('input');
+                const freq = parseInt(inputs[0].value) || 440;
+                const duracao = parseInt(inputs[1].value) || 1000;
+                const volume = (parseInt(inputs[2].value) || 50) / 100;
+                
+                // Parar qualquer som anterior se existir
+                if (oscillator || gainNode) {
+                    await pararAudio();
+                }
+                
+                await iniciarAudio(freq, volume);
+                await new Promise(resolve => setTimeout(resolve, duracao));
+                if (oscillator) { // Verificar se ainda existe um oscillator antes de parar
+                    await pararAudio();
+                }
                 break;
             case 'pararTom':
-                await pararAudio();
-                await new Promise(resolve => setTimeout(resolve, 300));
+                if (oscillator || gainNode) {
+                    await pararAudio();
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
                 break;
             case 'seLogico':
                 const containerLogico = bloco.querySelector('.bloco-container-logico');

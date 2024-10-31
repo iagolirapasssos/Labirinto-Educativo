@@ -325,6 +325,100 @@ class GerenciadorBlocos {
         });
     }
 
+    // Método auxiliar para melhorar a visualização durante o arraste
+    // Atualizar o método configurarDropZoneUnica para incluir a verificação de container
+    configurarDropZoneUnica(zone) {
+        if (!zone.dataset.dropzoneConfigured) {
+            let lastHighlightedBlock = null;
+
+            const clearHighlights = () => {
+                if (lastHighlightedBlock) {
+                    lastHighlightedBlock.classList.remove('dropping-above', 'dropping-below');
+                    lastHighlightedBlock = null;
+                }
+                zone.classList.remove('drag-over');
+            };
+
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!this.blocoArrastado) return;
+
+                const dropZone = e.target.closest('.drop-zone');
+                if (!dropZone) return;
+
+                // Verificar se é um container e se está em Meu Programa
+                const isContainerDrop = dropZone.classList.contains('bloco-container') || 
+                                      dropZone.classList.contains('bloco-container-logico');
+                const isInMeuPrograma = dropZone.closest('#sequencia-blocos') !== null;
+
+                // Se for um container e não estiver em Meu Programa, não mostrar indicador de drop
+                if (isContainerDrop && !isInMeuPrograma) {
+                    clearHighlights();
+                    e.dataTransfer.dropEffect = 'none';
+                    return;
+                }
+
+                clearHighlights();
+
+                const mouseY = e.clientY;
+                const blocos = Array.from(dropZone.children).filter(el => 
+                    el.classList.contains('bloco') && el !== this.blocoArrastado
+                );
+
+                if (blocos.length && !isContainerDrop) {
+                    let targetBlock = null;
+                    let position = 'above';
+
+                    for (const block of blocos) {
+                        const rect = block.getBoundingClientRect();
+                        const blockMiddle = rect.top + (rect.height / 2);
+                        
+                        if (mouseY <= blockMiddle) {
+                            targetBlock = block;
+                            position = 'above';
+                            break;
+                        } else if (mouseY > blockMiddle && mouseY <= rect.bottom) {
+                            targetBlock = block;
+                            position = 'below';
+                            break;
+                        }
+                    }
+
+                    if (!targetBlock && blocos.length > 0) {
+                        targetBlock = blocos[blocos.length - 1];
+                        position = 'below';
+                    }
+
+                    if (targetBlock) {
+                        lastHighlightedBlock = targetBlock;
+                        targetBlock.classList.add(`dropping-${position}`);
+                    }
+                } else if (isInMeuPrograma || !isContainerDrop) {
+                    dropZone.classList.add('drag-over');
+                }
+
+                e.dataTransfer.dropEffect = this.isBlocoDisponivel(this.blocoArrastado) ? 'copy' : 'move';
+            });
+
+            zone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                clearHighlights();
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                clearHighlights();
+                this.handleDrop(e);
+            });
+
+            zone.dataset.dropzoneConfigured = 'true';
+        }
+    }
+    
     inicializarBlocos() {
         const container = document.getElementById('blocos-disponiveis');
         container.innerHTML = '';
@@ -599,30 +693,144 @@ class GerenciadorBlocos {
         });
     }
 
-    configurarDropZoneUnica(zone) {
-        if (!zone.dataset.dropzoneConfigured) {
-            zone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (this.blocoArrastado) {
-                    this.atualizarDropZones(zone);
-                    e.dataTransfer.dropEffect = this.isBlocoDisponivel(this.blocoArrastado) ? 'copy' : 'move';
+    handleDrop(e) {
+        e.preventDefault();
+        const dropZone = e.target.closest('.drop-zone');
+        if (!dropZone || !this.blocoArrastado) return;
+
+        // Verificar se está tentando adicionar em um container
+        const isContainerDrop = dropZone.classList.contains('bloco-container') || 
+                              dropZone.classList.contains('bloco-container-logico');
+
+        // Verificar se está dentro de Meu Programa
+        const isInMeuPrograma = dropZone.closest('#sequencia-blocos') !== null;
+
+        // Se for um container e não estiver em Meu Programa, não permitir o drop
+        if (isContainerDrop && !isInMeuPrograma) {
+            dropZone.classList.remove('drag-over');
+            return;
+        }
+
+        // Limpar classes de indicação
+        dropZone.classList.remove('drag-over');
+
+        try {
+            const isFromAvailable = this.isBlocoDisponivel(this.blocoArrastado);
+            let novoBloco;
+
+            if (isFromAvailable) {
+                novoBloco = this.clonarBloco(this.blocoArrastado);
+            } else {
+                novoBloco = this.blocoArrastado;
+            }
+
+            // Remover estilos residuais do drag
+            novoBloco.style.position = '';
+            novoBloco.style.left = '';
+            novoBloco.style.top = '';
+            novoBloco.classList.remove('dragging');
+
+            if (!isContainerDrop) {
+                const mouseY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                // Encontrar todos os blocos válidos na dropzone
+                const blocos = Array.from(dropZone.children).filter(el => 
+                    el.classList.contains('bloco') && el !== novoBloco
+                );
+
+                if (blocos.length === 0) {
+                    dropZone.appendChild(novoBloco);
+                } else {
+                    // Encontrar o bloco alvo e sua posição
+                    let targetBlock = null;
+                    let insertBefore = true;
+
+                    for (const block of blocos) {
+                        const rect = block.getBoundingClientRect();
+                        const blockMiddle = rect.top + (rect.height / 2);
+                        
+                        if (mouseY <= blockMiddle) {
+                            targetBlock = block;
+                            insertBefore = true;
+                            break;
+                        } else if (mouseY > blockMiddle && mouseY <= rect.bottom) {
+                            targetBlock = block;
+                            insertBefore = false;
+                            break;
+                        }
+                    }
+
+                    // Se não encontrou um bloco específico, usar o último
+                    if (!targetBlock && blocos.length > 0) {
+                        targetBlock = blocos[blocos.length - 1];
+                        insertBefore = false;
+                    }
+
+                    // Realizar a troca de posições
+                    if (targetBlock) {
+                        const currentIndex = Array.from(dropZone.children).indexOf(novoBloco);
+                        const targetIndex = Array.from(dropZone.children).indexOf(targetBlock);
+
+                        // Se o bloco já está na dropzone
+                        if (currentIndex !== -1) {
+                            novoBloco.remove();
+                            
+                            if (insertBefore) {
+                                dropZone.insertBefore(novoBloco, targetBlock);
+                            } else {
+                                if (targetBlock.nextSibling) {
+                                    dropZone.insertBefore(novoBloco, targetBlock.nextSibling);
+                                } else {
+                                    dropZone.appendChild(novoBloco);
+                                }
+                            }
+                        } else {
+                            if (insertBefore) {
+                                dropZone.insertBefore(novoBloco, targetBlock);
+                            } else {
+                                if (targetBlock.nextSibling) {
+                                    dropZone.insertBefore(novoBloco, targetBlock.nextSibling);
+                                } else {
+                                    dropZone.appendChild(novoBloco);
+                                }
+                            }
+                        }
+                    } else {
+                        dropZone.appendChild(novoBloco);
+                    }
                 }
+            } else {
+                // Inserção em container (só permitido em Meu Programa)
+                const placeholder = dropZone.querySelector('.container-placeholder, .programa-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                dropZone.appendChild(novoBloco);
+            }
+
+            // Animar entrada
+            novoBloco.style.opacity = '0';
+            novoBloco.style.transform = 'translateY(-10px)';
+            requestAnimationFrame(() => {
+                novoBloco.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                novoBloco.style.opacity = '1';
+                novoBloco.style.transform = 'translateY(0)';
+                
+                novoBloco.addEventListener('transitionend', () => {
+                    novoBloco.style.transition = '';
+                }, { once: true });
             });
 
-            zone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                zone.classList.remove('drag-over');
-            });
-
-            zone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.handleDrop(e);
-            });
-
-            zone.dataset.dropzoneConfigured = 'true';
+            // Configurar drop zones para containers se necessário
+            if (novoBloco.querySelector('.drop-zone')) {
+                const containers = novoBloco.querySelectorAll('.drop-zone');
+                containers.forEach(container => {
+                    this.configurarDropZoneUnica(container);
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao soltar bloco:', error);
+            mostrarMensagem(i18nThemeManager.translate('messages.error.unexpected'), 'error');
         }
     }
 
@@ -929,16 +1137,14 @@ class GerenciadorBlocos {
         const bloco = e.target.closest('.bloco');
         if (!bloco) return;
 
-        if (this.isBlocoDisponivel(bloco)) {
-            e.dataTransfer.effectAllowed = 'copy';
-        } else {
-            e.dataTransfer.effectAllowed = 'move';
-        }
-
-        this.blocoArrastado = bloco;
+        // Adicionar classe para identificar o bloco sendo arrastado
         bloco.classList.add('dragging');
-        e.dataTransfer.setData('text/plain', bloco.dataset.tipo);
-
+        
+        // Configurar dados do drag
+        e.dataTransfer.effectAllowed = this.isBlocoDisponivel(bloco) ? 'copy' : 'move';
+        this.blocoArrastado = bloco;
+        
+        // Configurar a imagem de drag
         const ghost = bloco.cloneNode(true);
         ghost.style.opacity = '0.7';
         ghost.style.position = 'absolute';
@@ -946,6 +1152,12 @@ class GerenciadorBlocos {
         document.body.appendChild(ghost);
         e.dataTransfer.setDragImage(ghost, e.offsetX, e.offsetY);
         setTimeout(() => ghost.remove(), 0);
+
+        // Guardar dados do bloco para verificação de permissão de drop
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            tipo: bloco.dataset.tipo,
+            isFromAvailable: this.isBlocoDisponivel(bloco)
+        }));
     }
 
     handleDragEnd(e) {
@@ -971,63 +1183,114 @@ class GerenciadorBlocos {
         const dropZone = e.target.closest('.drop-zone');
         if (!dropZone || !this.blocoArrastado) return;
 
-        // Remover classe drag-over
+        // Limpar classes de indicação
         dropZone.classList.remove('drag-over');
 
-        // Obter configuração do bloco
-        const tipoBloco = this.blocoArrastado.dataset.tipo;
-        const configBloco = BLOCOS_CONFIG.find(bloco => bloco.id === tipoBloco);
-        if (!configBloco) return;
-
-        // Verificar aninhamento permitido
-        if (!this.verificarAninhamentoPermitido(dropZone, configBloco)) {
-            mostrarMensagem(i18nThemeManager.translate('messages.error.nestedBlock'), 'error');
-            return;
-        }
-
         try {
-            // Determinar se o bloco vem da área de blocos disponíveis
             const isFromAvailable = this.isBlocoDisponivel(this.blocoArrastado);
             let novoBloco;
 
             if (isFromAvailable) {
-                // Se vier dos blocos disponíveis, criar uma cópia
                 novoBloco = this.clonarBloco(this.blocoArrastado);
             } else {
-                // Se não, mover o bloco existente
                 novoBloco = this.blocoArrastado;
             }
 
-            // Remover o placeholder se existir
-            const placeholder = dropZone.querySelector('.container-placeholder, .programa-placeholder');
-            if (placeholder) {
-                placeholder.remove();
-            }
-
-            // Certificar que o bloco não tenha estilos residuais do drag
+            // Remover estilos residuais do drag
             novoBloco.style.position = '';
             novoBloco.style.left = '';
             novoBloco.style.top = '';
             novoBloco.classList.remove('dragging');
 
-            // Adicionar o bloco à drop zone com animação
+            // Determinar se estamos inserindo em um container ou permutando
+            const isContainerDrop = dropZone.classList.contains('bloco-container') || 
+                                  dropZone.classList.contains('bloco-container-logico');
+
+            if (!isContainerDrop) {
+                // Obter a posição Y do mouse/toque
+                const mouseY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                // Encontrar todos os blocos na dropzone exceto o arrastado
+                const blocos = Array.from(dropZone.children).filter(el => 
+                    el.classList.contains('bloco') && el !== this.blocoArrastado
+                );
+
+                // Se não há outros blocos, apenas append
+                if (blocos.length === 0) {
+                    dropZone.appendChild(novoBloco);
+                    return;
+                }
+
+                // Encontrar o bloco mais próximo e a posição relativa
+                let closestBlock = null;
+                let insertBefore = true;
+                let minDistance = Infinity;
+
+                blocos.forEach(block => {
+                    const rect = block.getBoundingClientRect();
+                    const blockMiddle = rect.top + (rect.height / 2);
+                    const distance = Math.abs(mouseY - blockMiddle);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestBlock = block;
+                        insertBefore = mouseY < blockMiddle;
+                    }
+                });
+
+                // Se encontramos um bloco próximo
+                if (closestBlock) {
+                    const currentIndex = Array.from(dropZone.children).indexOf(novoBloco);
+                    const targetIndex = Array.from(dropZone.children).indexOf(closestBlock);
+                    
+                    // Remover o bloco da sua posição atual se já estiver na dropzone
+                    if (currentIndex !== -1) {
+                        novoBloco.remove();
+                    }
+
+                    // Inserir o bloco na nova posição
+                    if (insertBefore) {
+                        dropZone.insertBefore(novoBloco, closestBlock);
+                    } else {
+                        if (closestBlock.nextSibling) {
+                            dropZone.insertBefore(novoBloco, closestBlock.nextSibling);
+                        } else {
+                            dropZone.appendChild(novoBloco);
+                        }
+                    }
+                } else {
+                    // Se não encontrou bloco próximo, adiciona ao final
+                    dropZone.appendChild(novoBloco);
+                }
+            } else {
+                // Inserção em container
+                const placeholder = dropZone.querySelector('.container-placeholder, .programa-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                dropZone.appendChild(novoBloco);
+            }
+
+            // Animar entrada
             novoBloco.style.opacity = '0';
             novoBloco.style.transform = 'translateY(-10px)';
-            dropZone.appendChild(novoBloco);
-
-            // Aplicar animação de entrada
             requestAnimationFrame(() => {
                 novoBloco.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 novoBloco.style.opacity = '1';
                 novoBloco.style.transform = 'translateY(0)';
+                
+                // Limpar transição após a animação
+                novoBloco.addEventListener('transitionend', () => {
+                    novoBloco.style.transition = '';
+                }, { once: true });
             });
 
-            // Se for um bloco aninhável, configurar sua drop zone interna
-            if (configBloco.temContainer) {
-                const container = novoBloco.querySelector('.bloco-container');
-                if (container) {
+            // Configurar drop zones para containers se necessário
+            if (novoBloco.querySelector('.drop-zone')) {
+                const containers = novoBloco.querySelectorAll('.drop-zone');
+                containers.forEach(container => {
                     this.configurarDropZoneUnica(container);
-                }
+                });
             }
         } catch (error) {
             console.error('Erro ao soltar bloco:', error);
