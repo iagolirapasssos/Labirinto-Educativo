@@ -7,68 +7,86 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="themes.css">
     <link rel="stylesheet" href="touch.css">
+  
 </head>
 <body>
-    <!-- Language selector -->
-    <div class="language-select">
-        <select id="language-select">
-            <option value="pt">Português</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-        </select>
-    </div>
-
-    <!-- Theme switcher -->
-    <div class="theme-switch">
-        <input type="checkbox" id="theme-toggle">
-        <label for="theme-toggle"></label>
-    </div>
-
-    <div id="blocos-disponiveis">
-        <h2 data-i18n="interface.availableBlocks">Blocos Disponíveis</h2>
-        <p class="instrucao" data-i18n="interface.dragInstructions">Arraste os blocos para a área "Meu Programa" ➡️</p>
-    </div>
-
-    <div id="labirinto-container">
-        <div id="nivel-controles">
-            <select id="nivel-select">
-                <option value="facil" data-i18n="interface.levels.easy">Nível Fácil (8x8)</option>
-                <option value="medio" data-i18n="interface.levels.medium">Nível Médio (12x12)</option>
-                <option value="dificil" data-i18n="interface.levels.hard">Nível Difícil (15x15)</option>
+    <!-- Configurações e idioma -->
+    <div class="config-container">
+        <div class="language-select">
+            <select id="language-select">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
             </select>
-            <button id="novo-labirinto" data-i18n="interface.newMaze">🔄 Novo Labirinto</button>
         </div>
-        <div id="labirinto"></div>
-        <div id="controles">
-            <button id="executar" data-i18n="interface.execute">▶ Executar</button>
-            <button id="pausar" disabled data-i18n="interface.pause">⏸ Pausar</button>
-            <button id="parar" disabled data-i18n="interface.stop">⏹ Parar</button>
-            <button id="limpar" data-i18n="interface.clear">🗑 Limpar</button>
-            <button id="salvar-programa" data-i18n="interface.save">💾 Salvar Programa</button>
-            <button id="abrir-programa" data-i18n="interface.open">📂 Abrir Programa</button>
-            <input type="file" id="input-abrir-programa" accept="application/json" style="display: none;">
+        <div class="theme-switch">
+            <input type="checkbox" id="theme-toggle">
+            <label for="theme-toggle"></label>
         </div>
     </div>
 
-    <div id="programa-container">
-        <div id="programa-header">
-            <h2 data-i18n="interface.myProgram">Meu Programa</h2>
-            <div id="resize-handle" class="touch-handle">↔</div>
+    <!-- Container principal com abas -->
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('maze')">Labirinto</button>
+            <button class="tab-button" onclick="switchTab('program')">Programação</button>
         </div>
-        <div class="instrucao-programa" data-i18n="interface.dragInstructions">
-            Arraste os blocos para esta área e organize-os na ordem que deseja executar
-        </div>
-        <div id="programa">
-            <div id="sequencia-blocos" class="bloco-container drop-zone">
-                <div class="programa-placeholder" data-i18n="interface.dropBlocks">
-                    Solte os blocos aqui para criar seu programa
+
+        <!-- Aba do Labirinto -->
+        <div id="maze-tab" class="tab-content active">
+            <div id="labirinto-container">
+                <div id="nivel-controles">
+                    <select id="nivel-select">
+                        <option value="facil" data-i18n="interface.levels.easy">Nível Fácil (8x8)</option>
+                        <option value="medio" data-i18n="interface.levels.medium">Nível Médio (12x12)</option>
+                        <option value="dificil" data-i18n="interface.levels.hard">Nível Difícil (15x15)</option>
+                    </select>
+                    <button id="novo-labirinto" data-i18n="interface.newMaze">🔄 Novo Labirinto</button>
+                </div>
+                <div id="labirinto"></div>
+                <div id="controles">
+                    <button id="executar" data-i18n="interface.execute">▶ Executar</button>
+                    <button id="pausar" disabled data-i18n="interface.pause">⏸ Pausar</button>
+                    <button id="parar" disabled data-i18n="interface.stop">⏹ Parar</button>
+                    <button id="limpar" data-i18n="interface.clear">🗑 Limpar</button>
+                    <button id="salvar-programa" data-i18n="interface.save">💾 Salvar Programa</button>
+                    <button id="abrir-programa" data-i18n="interface.open">📂 Abrir Programa</button>
+                    <input type="file" id="input-abrir-programa" accept="application/json" style="display: none;">
                 </div>
             </div>
         </div>
+
+        <!-- Aba de Programação -->
+        <div id="program-tab" class="tab-content">
+            <div class="programming-container">
+                <div id="blocos-disponiveis">
+                    <h2 data-i18n="interface.availableBlocks">Blocos Disponíveis</h2>
+                    <p class="instrucao" data-i18n="interface.dragInstructions">Arraste os blocos para a área "Meu Programa" ➡️</p>
+                </div>
+
+                <div id="programa-container">
+                    <div id="programa-header">
+                        <h2 data-i18n="interface.myProgram">Meu Programa</h2>
+                        <div id="resize-handle" class="touch-handle">↔</div>
+                    </div>
+                    <div class="instrucao-programa" data-i18n="interface.dragInstructions">
+                        Arraste os blocos para esta área e organize-os na ordem que deseja executar
+                    </div>
+                    <div id="programa">
+                        <div id="sequencia-blocos" class="bloco-container drop-zone">
+                            <div class="programa-placeholder" data-i18n="interface.dropBlocks">
+                                Solte os blocos aqui para criar seu programa
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="lixeira" title="Arraste blocos aqui para excluir" class="touch-area">🗑️</div>
+        </div>
     </div>
 
+    <!-- Elementos auxiliares -->
     <div id="mensagem"></div>
-
     <div id="tutorial" class="tutorial">
         <div class="tutorial-content">
             <h3 data-i18n="tutorial.title">Como Jogar</h3>
@@ -83,7 +101,6 @@
                 <li data-i18n="tutorial.steps.7">O objetivo é chegar na bandeira! 🏁</li>
                 <li data-i18n="tutorial.steps.logical">Use blocos lógicos para criar condições complexas com AND e OR</li>
                 <li data-i18n="tutorial.steps.jsonDrop">Arraste arquivos JSON para a área "Meu Programa" para carregar programas salvos</li>
-
             </ol>
             <div class="tutorial-atalhos">
                 <h4 data-i18n="tutorial.shortcuts.title">Atalhos do Teclado:</h4>
@@ -98,11 +115,29 @@
         </div>
     </div>
 
-    <div id="lixeira" title="Arraste blocos aqui para excluir" class="touch-area">🗑️</div>
     <button id="ajuda" class="botao-ajuda touch-area">?</button>
 
     <!-- Scripts -->
     <script src="blocks.js" type="module"></script>
     <script src="main.js" type="module"></script>
+    <script>
+        function switchTab(tabId) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Add active class to selected tab
+            const selectedTab = tabId === 'maze' ? 'maze-tab' : 'program-tab';
+            document.getElementById(selectedTab).classList.add('active');
+            
+            // Add active class to clicked button
+            const buttonIndex = tabId === 'maze' ? 0 : 1;
+            document.querySelectorAll('.tab-button')[buttonIndex].classList.add('active');
+        }
+    </script>
 </body>
 </html>
