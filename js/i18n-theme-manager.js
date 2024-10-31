@@ -46,10 +46,9 @@ class I18nThemeManager {
     setupThemeToggle() {
         const toggle = document.getElementById('theme-toggle');
         if (toggle) {
-            toggle.checked = this.themePreference === 'dark';
+            toggle.value = this.themePreference;
             toggle.addEventListener('change', (e) => {
-                const newTheme = e.target.checked ? 'dark' : 'light';
-                this.applyTheme(newTheme);
+                this.applyTheme(e.target.value);
             });
         }
     }

@@ -1,4 +1,1822 @@
-blocks.js:
+css/styles.css:
+/* ==========================================================================
+   Layout Components
+   ========================================================================== */
+
+/* Container Principal e Labirinto */
+#blocos-disponiveis, 
+#labirinto-container {
+    position: relative;
+    resize: horizontal;
+    overflow: auto;
+    min-width: 250px;
+    max-width: 800px;
+}
+
+/* Containers de Programação */
+.programming-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+#blocos-disponiveis {
+    width: 300px;
+    min-width: 300px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 20px;
+    resize: horizontal;
+}
+
+/* Container do Programa */
+#programa-container {
+    flex: 1;
+    min-width: 300px;
+    height: 100%;
+    overflow: auto;
+    position: relative;
+}
+
+#programa {
+    width: 100%;
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Estrutura de Tabs */
+.tab-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    font-weight: bold;
+    background-color: #e0e0e0;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab-button.active {
+    background-color: #2196F3;
+    color: white;
+}
+
+.tab-content {
+    flex: 1;
+    display: none;
+    padding: 20px;
+    overflow: auto;
+    margin: 0;
+}
+
+.tab-content.active {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#maze-tab {
+    justify-content: center;
+}
+
+/* Zona de Drop */
+.drop-zone {
+    min-height: 100px;
+    border: #ccc dashed 2px;
+    border-radius: 5px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #2196F3;
+    background-color: #e3f2fd;
+}
+
+/* Instruções */
+.instrucao {
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: var(--instruction-bg);
+    border-radius: 5px;
+    border-left: 4px solid var(--instruction-border);
+}
+
+.instrucao-programa {
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: var(--program-instruction-bg);
+    border-radius: 5px;
+    border-left: 4px solid var(--program-instruction-border);
+}
+
+/* ==========================================================================
+   Block Components
+   ========================================================================== */
+
+/* Estilos Base dos Blocos */
+.bloco {
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 5px;
+    cursor: move;
+    color: white;
+    font-weight: bold;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Estados dos Blocos */
+.bloco:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bloco.dragging {
+    opacity: 0.5;
+    transform: scale(1.05);
+}
+
+/* Manipulador do Bloco */
+.bloco-handle {
+    cursor: move;
+    font-size: 20px;
+    padding: 0 5px;
+}
+
+/* Conteúdo do Bloco */
+.bloco-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+}
+
+/* Tipos de Blocos */
+#programa .bloco-movimento { background-color: #4CAF50; }
+#programa .bloco-espelhamento { background-color: #E91E63; }
+#programa .bloco-controle { background-color: #2196F3; }
+#programa .bloco-logico { background-color: #9c27b0; }
+#programa .bloco-sensores { background-color: #795548; }
+#programa .bloco-efeitos { background-color: #FF9800; }
+#programa .bloco-senaoSe { background-color: #FF9800; }
+#programa .bloco-senao { background-color: #FF5722; }
+#programa .bloco-temParedeDireita { background-color: #795548; }
+#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
+#programa .bloco-temParedeTras { background-color: #5D4037; }
+#programa .bloco-aguardar { background-color: #3F51B5; }
+
+/* Ícones dos Blocos */
+#programa .bloco-temParedeDireita::before,
+#programa .bloco-temParedeEsquerda::before,
+#programa .bloco-temParedeTras::before {
+    content: '🛑';
+    margin-right: 5px;
+}
+
+#programa .bloco-emitirTom::before {
+    content: '🔊';
+    margin-right: 5px;
+}
+
+#programa .bloco-pararTom::before {
+    content: '🔇';
+    margin-right: 5px;
+}
+
+/* Container dos Blocos */
+.bloco-container {
+    min-height: 50px;
+    padding: 10px;
+    margin: 5px 0 5px 20px;
+    border-left: 2px dashed rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+}
+
+.bloco-container.drag-over {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Blocos Lógicos */
+.bloco-operadorLogico {
+    background-color: #FF5722;
+}
+
+.bloco-verificadorLogico {
+    background-color: #795548;
+}
+
+.bloco-container-logico {
+    min-height: 40px;
+    padding: 8px;
+    margin: 5px 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: rgba(255, 255, 255, 0.3) dashed 2px;
+    border-radius: 4px;
+}
+
+/* Indicadores Lógicos */
+[data-retorna-logico="true"]::after {
+    content: "→ " attr(data-tipo);
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    opacity: 0.7;
+    color: white;
+}
+
+/* Placeholders */
+.container-placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding: 10px;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.programa-placeholder {
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Maze Components
+   ========================================================================== */
+
+/* Labirinto Base */
+#labirinto {
+    position: relative;
+    margin: 20px auto;
+    background: #fff;
+    border: var(--maze-border) solid 2px;
+    overflow: hidden;
+}
+
+/* Células do Labirinto */
+.celula {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parede {
+    background-color: var(--wall-color);
+}
+
+.caminho {
+    background-color: var(--path-color);
+}
+
+/* Carro e Chegada */
+.carro {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    transform-origin: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+    transform: translate(-50%, -50%);
+}
+
+.carro svg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.chegada {
+    position: absolute;
+    font-size: 24px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+/* ==========================================================================
+   Controls & Buttons
+   ========================================================================== */
+
+/* Controles do Nível */
+#nivel-controles {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Seletor de Nível */
+#nivel-select {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: var(--select-border) solid 2px;
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    font-size: 16px;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath d='M6 8.586L1.707 4.293 3.121 2.879 6 5.758l2.879-2.879 1.414 1.414L6 8.586z' fill='%23333333'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#nivel-select:hover {
+    border-color: #1976D2;
+}
+
+#nivel-select:focus {
+    outline: none;
+    border-color: #1976D2;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+/* Botões de Controle */
+#controles {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--button-disabled);
+}
+
+/* Cores dos Botões */
+#executar { background-color: #4CAF50; color: white; }
+#pausar { background-color: #ff9800; color: white; }
+#parar { background-color: #f44336; color: white; }
+#limpar { background-color: #9e9e9e; color: white; }
+#novo-labirinto { background-color: #2196F3; color: white; }
+#salvar-programa { background-color: #FFC107; color: white; }
+#abrir-programa { background-color: #00BCD4; color: white; }
+
+/* ==========================================================================
+   Configuration Components
+   ========================================================================== */
+
+/* Container de Configuração */
+.config-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 5rem; /* Adiciona espaço de 1rem entre os elementos */
+    z-index: 1000;
+    align-items: center;
+}
+
+/* Seletores de Configuração */
+.config-container select {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 2px solid var(--select-border);
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.config-container select:hover {
+    border-color: var(--select-border);
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* Seletor de Tema */
+.theme-switch {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.theme-switch select {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 2px solid var(--select-border);
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+/* Seletor de Idioma */
+.language-select {
+    margin-right: 4rem; /* Ajusta o espaço à direita do seletor de idioma */
+    position: static;
+    display: flex;
+    align-items: center;
+}
+
+.language-select select {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: var(--select-border) solid 2px;
+    background-color: #333333;
+    color: var(--select-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.language-select select:hover {
+    border-color: #1976D2;
+}
+
+/* ==========================================================================
+   UI Components
+   ========================================================================== */
+
+/* Mensagens */
+#mensagem {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+}
+
+.success { background-color: #4CAF50; color: white; }
+.error { background-color: #f44336; color: white; }
+.info { background-color: #2196F3; color: white; }
+
+/* Tutorial */
+.tutorial {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--tutorial-bg);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.tutorial-content {
+    background: var(--tutorial-content-bg);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+}
+
+.tutorial-content h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.tutorial-content ol {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.tutorial-content li {
+    margin: 10px 0;
+    color: var(--tutorial-text);
+}
+
+/* Botões de Ajuda e Lixeira */
+.botao-ajuda {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #2196F3;
+    color: white;
+    font-size: 20px;
+    z-index: 1000;
+}
+
+#lixeira {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#lixeira.lixeira-ativa {
+    background-color: #ff4444;
+    transform: scale(1.1);
+}
+
+/* Redimensionador */
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: ew-resize;
+    background: transparent;
+    transition: background 0.3s;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+/* Tablet e Mobile */
+@media (max-width: 768px) {
+    /* Configurações Gerais */
+    .touch-device .language-select, 
+    .touch-device .theme-switch {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+    }
+
+    .touch-device body {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    /* Blocos e Containers */
+    .touch-device #blocos-disponiveis {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: row;
+        padding: 10px;
+    }
+
+    .touch-device #blocos-disponiveis .grupo-blocos {
+        min-width: 200px;
+        margin-right: 15px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    /* Labirinto */
+    .touch-device #labirinto-container {
+        width: 100%;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .touch-device #labirinto {
+        max-width: 100%;
+        overflow: auto;
+        transform-origin: center;
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Programa */
+    .touch-device #programa-container {
+        width: 100%;
+        max-width: none;
+        height: 300px;
+    }
+
+    /* Controles */
+    .touch-device #controles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .touch-device button {
+        width: 100%;
+        margin: 0;
+    }
+
+    .touch-device #nivel-controles {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .touch-device #nivel-select {
+        width: 100%;
+    }
+
+    /* Blocos */
+    .touch-device .bloco {
+        margin: 5px 0;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .touch-device .bloco-container {
+        margin-left: 20px;
+        padding: 8px;
+    }
+
+    .touch-device .bloco.dragging {
+        position: fixed;
+        z-index: 1000;
+        width: 90%;
+        max-width: 300px;
+        opacity: 0.9;
+    }
+
+    /* UI Elements */
+    .touch-device .tutorial-content {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .touch-device .tutorial-atalhos {
+        display: none;
+    }
+
+    .touch-device #lixeira,
+    .touch-device #ajuda {
+        bottom: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .touch-device #mensagem {
+        width: 90%;
+        max-width: none;
+        left: 5%;
+        transform: none;
+        padding: 15px;
+        font-size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 50px;
+    }
+}
+
+/* Landscape Mode */
+@media (orientation: landscape) {
+    .touch-device .config-menu {
+        position: relative;
+        padding: 5px;
+    }
+
+    .touch-device #blocos-disponiveis {
+        height: 150px;
+    }
+
+    .touch-device #programa-container {
+        height: 200px;
+    }
+
+    .touch-device #controles {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Pequenas Telas */
+@media (max-width: 320px) {
+    .touch-device .bloco {
+        font-size: 14px;
+    }
+
+    .touch-device button {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .touch-device #lixeira,
+    .touch-device #ajuda {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+}
+
+/* ==========================================================================
+   Block Input & Select Styles
+   ========================================================================== */
+
+/* Base styles for inputs and selects within blocks */
+.bloco input,
+.bloco select {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    padding: 4px 8px;
+    margin: 0 4px;
+    min-width: 60px;
+    transition: all 0.3s ease;
+    outline: none;
+    backdrop-filter: blur(2px);
+}
+
+/* Input specific styles */
+.bloco input {
+    /* Remove spinner arrows for number inputs */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Remove spinner arrows for webkit browsers */
+.bloco input::-webkit-outer-spin-button,
+.bloco input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Hover states */
+.bloco input:hover,
+.bloco select:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* Focus states */
+.bloco input:focus,
+.bloco select:focus {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Select specific styles */
+.bloco select {
+    cursor: pointer;
+    /* Custom arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5h6l-3 3z' fill='rgba(255,255,255,0.8)'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px; /* Space for arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Select options styling */
+.bloco select option {
+    background-color: var(--block-bg);
+    color: var(--text-color);
+    padding: 8px;
+}
+
+/* Touch device specific styles */
+@media (hover: none) {
+    .bloco input,
+    .bloco select {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 6px 10px; /* Larger touch target */
+    }
+
+    .bloco select {
+        padding-right: 30px; /* Larger touch area for arrow */
+    }
+}
+
+/* Block type specific styles */
+/* Movimento */
+#programa .bloco-movimento input,
+#programa .bloco-movimento select {
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+/* Controle */
+#programa .bloco-controle input,
+#programa .bloco-controle select {
+    border-color: rgba(33, 150, 243, 0.5);
+}
+
+/* Lógico */
+#programa .bloco-logico input,
+#programa .bloco-logico select {
+    border-color: rgba(156, 39, 176, 0.5);
+}
+
+/* Sensores */
+#programa .bloco-sensores input,
+#programa .bloco-sensores select {
+    border-color: rgba(121, 85, 72, 0.5);
+}
+
+/* Efeitos */
+#programa .bloco-efeitos input,
+#programa .bloco-efeitos select {
+    border-color: rgba(255, 152, 0, 0.5);
+}
+
+/* Input placeholders */
+.bloco input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Disabled state */
+.bloco input:disabled,
+.bloco select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .bloco input,
+[data-theme="dark"] .bloco select {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .bloco input:hover,
+[data-theme="dark"] .bloco select:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .bloco input:focus,
+[data-theme="dark"] .bloco select:focus {
+    background: rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Animation for focus */
+@keyframes inputFocus {
+    0% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+    50% { box-shadow: 0 0 8px rgba(255, 255, 255, 0.3); }
+    100% { box-shadow: 0 0 4px rgba(255, 255, 255, 0.2); }
+}
+
+.bloco input:focus,
+.bloco select:focus {
+    animation: inputFocus 1s ease-in-out infinite;
+}
+
+css/themes.css:
+/* https://jigsaw.w3.org/css-validator/ */
+
+/* Theme variables */
+:root {
+  /* Light theme (default) */
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+  --border-color: #ccc;
+  --block-bg: #fff;
+  --block-text: #fff;
+  --wall-color: #8b4513;
+  --path-color: #ffffff;
+  --tutorial-bg: rgba(0,0,0,0.7);
+  --tutorial-content-bg: white;
+  --tutorial-text: #666;
+  --message-bg: rgba(0,0,0,0.8);
+  --container-bg: #f5f5f5;
+  --placeholder-color: #999;
+  --instruction-bg: #fff3cd;
+  --instruction-border: #ffc107;
+  --program-instruction-bg: #e7f3ff;
+  --program-instruction-border: #2196F3;
+  --select-bg: #ffffff;
+  --select-text: #333333;
+  --select-border: #2196F3;
+  --button-disabled: rgba(0,0,0,0.3);
+  --maze-border: #333;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #fff;
+  --border-color: #444;
+  --block-bg: #333;
+  --block-text: #fff;
+  --wall-color: #4a3728;
+  --path-color: #2a2a2a;
+  --tutorial-bg: rgba(0,0,0,0.9);
+  --tutorial-content-bg: #333;
+  --tutorial-text: #ccc;
+  --message-bg: rgba(255,255,255,0.9);
+  --container-bg: #2a2a2a;
+  --placeholder-color: #777;
+  --instruction-bg: #2c2618;
+  --instruction-border: #856404;
+  --program-instruction-bg: #1a2634;
+  --program-instruction-border: #0d47a1;
+  --select-bg: #333333;
+  --select-text: #ffffff;
+  --select-border: #1976D2;
+  --button-disabled: rgba(255,255,255,0.3);
+  --maze-border: #666;
+}
+
+/* Forest theme */
+[data-theme="forest"] {
+  --bg-color: #2F4538;
+  --text-color: #E8F5E9;
+  --border-color: #81C784;
+  --block-bg: #2E7D32;
+  --block-text: #FFFFFF;
+  --wall-color: #1B5E20;
+  --path-color: #C8E6C9;
+  --tutorial-bg: rgba(27, 94, 32, 0.9);
+  --tutorial-content-bg: #4CAF50;
+  --tutorial-text: #E8F5E9;
+  --message-bg: rgba(76, 175, 80, 0.9);
+  --container-bg: #388E3C;
+  --placeholder-color: #A5D6A7;
+  --instruction-bg: #43A047;
+  --instruction-border: #66BB6A;
+  --program-instruction-bg: #2E7D32;
+  --program-instruction-border: #81C784;
+  --select-bg: #388E3C;
+  --select-text: #FFFFFF;
+  --select-border: #81C784;
+  --button-disabled: rgba(200, 230, 201, 0.3);
+  --maze-border: #66BB6A;
+}
+
+/* Purple theme */
+[data-theme="purple"] {
+  --bg-color: #4A148C;
+  --text-color: #F3E5F5;
+  --border-color: #BA68C8;
+  --block-bg: #6A1B9A;
+  --block-text: #FFFFFF;
+  --wall-color: #4A148C;
+  --path-color: #E1BEE7;
+  --tutorial-bg: rgba(74, 20, 140, 0.9);
+  --tutorial-content-bg: #8E24AA;
+  --tutorial-text: #F3E5F5;
+  --message-bg: rgba(142, 36, 170, 0.9);
+  --container-bg: #7B1FA2;
+  --placeholder-color: #CE93D8;
+  --instruction-bg: #8E24AA;
+  --instruction-border: #AB47BC;
+  --program-instruction-bg: #6A1B9A;
+  --program-instruction-border: #BA68C8;
+  --select-bg: #7B1FA2;
+  --select-text: #FFFFFF;
+  --select-border: #BA68C8;
+  --button-disabled: rgba(225, 190, 231, 0.3);
+  --maze-border: #AB47BC;
+}
+
+/* Base styles */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+
+/* Language selector styles */
+.language-select {
+  position: fixed;
+  top: 20px;
+  right: 90px;
+  z-index: 1000;
+}
+
+.language-select select {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 2px solid var(--select-border);
+  background-color: var(--select-bg);
+  color: var(--select-text);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.language-select select:hover {
+  border-color: var(--select-border);
+}
+
+/* Theme-specific element styles */
+#labirinto {
+  border-color: var(--maze-border);
+}
+
+.parede {
+  background-color: var(--wall-color);
+}
+
+.caminho {
+  background-color: var(--path-color);
+}
+
+.instrucao {
+  background-color: var(--instruction-bg);
+  border-left-color: var(--instruction-border);
+}
+
+.instrucao-programa {
+  background-color: var(--program-instruction-bg);
+  border-left-color: var(--program-instruction-border);
+}
+
+#programa {
+  background: var(--container-bg);
+}
+
+.programa-placeholder {
+  color: var(--placeholder-color);
+}
+
+button:disabled {
+  background-color: var(--button-disabled);
+}
+
+css/touch.css:
+/* ... (código anterior permanece o mesmo) */
+
+/* Ajustes para telas pequenas */
+@media (max-width: 768px) {
+    .touch-device .language-select,
+    .touch-device .theme-switch {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+    }
+    
+    .touch-device body {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .touch-device #blocos-disponiveis {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: row;
+        padding: 10px;
+    }
+
+    .touch-device #blocos-disponiveis .grupo-blocos {
+        min-width: 200px;
+        margin-right: 15px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .touch-device #labirinto-container {
+        width: 100%;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .touch-device #labirinto {
+        max-width: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .touch-device #programa-container {
+        width: 100%;
+        max-width: none;
+        height: 300px;
+    }
+
+    .touch-device #controles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .touch-device button {
+        width: 100%;
+        margin: 0;
+    }
+
+    .touch-device #nivel-controles {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .touch-device #nivel-select {
+        width: 100%;
+    }
+
+    .touch-device .bloco {
+        margin: 5px 0;
+        width: 100%;
+    }
+
+    .touch-device .bloco-container {
+        margin-left: 20px;
+        padding: 8px;
+    }
+
+    /* Melhorar estilo do tutorial em telas pequenas */
+    .touch-device .tutorial-content {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .touch-device .tutorial-content ol {
+        padding-left: 20px;
+    }
+
+    .touch-device .tutorial-atalhos {
+        display: none; /* Ocultar atalhos em dispositivos touch */
+    }
+
+    /* Ajustar posição da lixeira e botão de ajuda */
+    .touch-device #lixeira {
+        bottom: 10px;
+        left: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .touch-device #ajuda {
+        bottom: 10px;
+        right: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    /* Melhorar layout dos blocos em tela pequena */
+    .touch-device .bloco-conteudo {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .touch-device .bloco input,
+    .touch-device .bloco select {
+        width: 100%;
+        max-width: 150px;
+    }
+
+    /* Ajustar menu de configurações */
+    .touch-device .config-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-color);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Adicionar suporte para gestos de zoom */
+    .touch-device #labirinto {
+        transform-origin: center;
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Melhorar feedback visual durante o arraste */
+    .touch-device .bloco.dragging {
+        position: fixed;
+        z-index: 1000;
+        width: 90%;
+        max-width: 300px;
+        opacity: 0.9;
+    }
+
+    /* Ajustar espaçamento de blocos aninhados */
+    .touch-device .bloco-container .bloco-container {
+        margin-left: 15px;
+    }
+
+    /* Ajustar mensagens de feedback */
+    .touch-device #mensagem {
+        width: 90%;
+        max-width: none;
+        left: 5%;
+        transform: none;
+        padding: 15px;
+        font-size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 50px;
+    }
+
+    /* Melhorar visualização de placeholders */
+    .touch-device .container-placeholder,
+    .touch-device .programa-placeholder {
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* Ajustar seletores de idioma e tema em modo landscape */
+    @media (orientation: landscape) {
+        .touch-device .config-menu {
+            position: relative;
+            padding: 5px;
+        }
+
+        .touch-device #blocos-disponiveis {
+            height: 150px;
+        }
+
+        .touch-device #programa-container {
+            height: 200px;
+        }
+
+        .touch-device #controles {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Ajustes específicos para telas muito pequenas */
+    @media (max-width: 320px) {
+        .touch-device .bloco {
+            font-size: 14px;
+        }
+
+        .touch-device button {
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        .touch-device #lixeira,
+        .touch-device #ajuda {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+    }
+}
+
+data/translations.json:
+{
+  "pt": {
+    "blocks": {
+      "robotStopped": "🛑 Robô parado!",
+      "stopRobot": "Parar Robô",
+      "checkFlag": "Chegou na Bandeira",
+      "movimento": "Movimentos",
+      "espelhamento": "Espelhamento",
+      "controle": "Controle",
+      "logico": "Lógica",
+      "sensores": "Sensores",
+      "efeitos": "Efeitos",
+      "voltarInicio": "Voltar ao Início",
+      "verificarParede": "Verificar Paredes",
+      "audio": "Áudio",
+      "moveForward": "Andar para Frente",
+      "moveBackward": "Andar para Trás",
+      "turnRight": "Virar à Direita",
+      "turnLeft": "Virar à Esquerda",
+      "mirrorH": "Espelhar Horizontal",
+      "mirrorV": "Espelhar Vertical",
+      "repeat": "Repetir",
+      "forever": "Para Sempre",
+      "if": "Se",
+      "elseIf": "SENÃO SE",
+      "else": "SENÃO",
+      "waitSeconds": "Esperar segundos",
+      "waitMs": "Aguardar ms",
+      "checkRightWall": "Tem Parede Direita",
+      "checkLeftWall": "Tem Parede Esquerda",
+      "checkBackWall": "Tem Parede Trás",
+      "emitTone": "Emitir Tom de X Hz",
+      "stopTone": "Parar Tom",
+      "seconds": "segundos",
+      "ms": "ms",
+      "times": "vezes",
+      "logico": "Lógica",
+      "operadorLogico": "Operadores Lógicos",
+      "verificadorLogico": "Verificadores Lógicos",
+      "logicalIf": "SE Lógico",
+      "condition": "Condição",
+      "checkWallRight": "Verificar Parede Direita",
+      "checkWallLeft": "Verificar Parede Esquerda",
+      "condition1": "Condição 1",
+      "condition2": "Condição 2",
+      "logicalIf": "SE Lógico",
+      "condition": "Condição",
+      "checkWallRight": "Verificar Parede Direita",
+      "checkWallLeft": "Verificar Parede Esquerda",
+      "checkWallBack": "Verificar Parede Trás",
+      "returnBoolean": "Retorna Booleano"
+    },
+    "interface": {
+      "dropLogicBlocks": "Arraste blocos lógicos aqui",
+      "availableBlocks": "Blocos Disponíveis",
+      "dragInstructions": "Arraste os blocos para a área \"Meu Programa\" ➡️",
+      "blocksAvaliables": "Blocos",
+      "myProgram": "Meu Programa",
+      "dragHere": "Arraste blocos aqui",
+      "dropBlocks": "Solte os blocos aqui para criar seu programa",
+      "execute": "▶ Executar",
+      "pause": "⏸ Pausar",
+      "stop": "⏹ Parar",
+      "clear": "🗑 Limpar",
+      "save": "💾 Salvar Programa",
+      "open": "📂 Abrir Programa",
+      "newMaze": "🔄 Novo Labirinto",
+      "levels": {
+        "easy": "Nível Fácil (8x8)",
+        "medium": "Nível Médio (12x12)",
+        "hard": "Nível Difícil (15x15)"
+      }
+    },
+    "messages": {
+      "saved": "Programa salvo com sucesso!",
+      "loaded": "Programa carregado com sucesso!",
+      "programComplete": "Programa concluído!",
+      "victory": "🎉 Parabéns! Você chegou ao objetivo!",
+      "waiting": "Aguardando {ms} milissegundos...",
+      "audio": {
+        "playing": "Reproduzindo tom de {frequency} Hz",
+        "stopped": "Tom parado"
+      },
+      "error": {
+        "loading": "Erro ao carregar o programa. Verifique o arquivo.",
+        "saving": "Erro ao salvar o programa.",
+        "browser": "Seu navegador não suporta arrastar e soltar. Por favor, use um navegador mais recente.",
+        "wall": "Oops! O carro bateu em uma parede! 💥",
+        "unexpected": "Ocorreu um erro inesperado. Tente novamente.",
+        "unknownBlock": "Bloco desconhecido detectado!",
+        "nestedBlock": "Não é possível aninhar este tipo de bloco aqui.",
+        "audioPlaying": "Já existe um tom sendo reproduzido.",
+        "noAudio": "Nenhum tom está sendo reproduzido.",
+        "audio": "Erro ao manipular áudio."
+      }
+    },
+    "tutorial": {
+      "title": "Como Jogar",
+      "steps": [
+        "Escolha o nível do labirinto",
+        "Arraste os blocos da esquerda para a área \"Meu Programa\"",
+        "Organize os blocos na ordem que deseja executar",
+        "Use os blocos de repetição e condicionais para criar sequências",
+        "Arraste blocos para dentro dos blocos de controle",
+        "Para excluir um bloco, arraste-o até a lixeira",
+        "Clique em \"Executar\" para ver o carro seguir suas instruções",
+        "O objetivo é chegar na bandeira! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Atalhos do Teclado:",
+        "execute": "Ctrl/Cmd + Enter: Executar programa",
+        "pause": "Ctrl/Cmd + P: Pausar execução", 
+        "stop": "Ctrl/Cmd + S: Parar execução",
+        "newMaze": "Ctrl/Cmd + N: Novo labirinto"
+      },
+      "understood": "Entendi!"
+    }
+  },
+  "en": {
+    "blocks": {
+      "robotStopped": "🛑 Robot stopped!",
+      "stopRobot": "Stop Robot",
+      "checkFlag": "Reached Flag",
+      "movimento": "Movement",
+      "espelhamento": "Mirroring",
+      "controle": "Control",
+      "logico": "Logic",
+      "sensores": "Sensors",
+      "efeitos": "Effects",
+      "returnToStart": "Return to Start",
+      "checkWall": "Check Walls",
+      "moveForward": "Move Forward",
+      "moveBackward": "Move Backward",
+      "turnRight": "Turn Right",
+      "turnLeft": "Turn Left",
+      "mirrorH": "Mirror Horizontal",
+      "mirrorV": "Mirror Vertical",
+      "repeat": "Repeat",
+      "forever": "Forever",
+      "if": "If",
+      "elseIf": "ELSE IF",
+      "else": "ELSE",
+      "waitSeconds": "Wait seconds",
+      "waitMs": "Wait ms",
+      "checkRightWall": "Right Wall",
+      "checkLeftWall": "Left Wall",
+      "checkBackWall": "Back Wall",
+      "emitTone": "Emit Tone X Hz",
+      "stopTone": "Stop Tone",
+      "logico": "Logic",
+      "operadorLogico": "Logical Operators",
+      "verificadorLogico": "Logical Checkers",
+      "logicalIf": "Logical IF",
+      "condition": "Condition",
+      "checkWallRight": "Check Right Wall",
+      "checkWallLeft": "Check Left Wall",
+      "condition1": "Condition 1",
+      "condition2": "Condition 2",
+      "logicalIf": "Logical IF",
+      "condition": "Condition",
+      "checkWallRight": "Check Right Wall",
+      "checkWallLeft": "Check Left Wall",
+      "checkWallBack": "Check Back Wall",
+      "returnBoolean": "Returns Boolean"
+    },
+    "interface": {
+      "dropLogicBlocks": "Drop logic blocks here",
+      "availableBlocks": "Available Blocks",
+      "dragInstructions": "Drag blocks to \"My Program\" area ➡️",
+      "blocksAvaliables": "Blocks",
+      "myProgram": "My Program",
+      "dragHere": "Drag blocks here",
+      "dropBlocks": "Drop blocks here to create your program",
+      "execute": "▶ Execute",
+      "pause": "⏸ Pause",
+      "stop": "⏹ Stop",
+      "clear": "🗑 Clear",
+      "save": "💾 Save Program",
+      "open": "📂 Open Program",
+      "newMaze": "🔄 New Maze",
+      "levels": {
+        "easy": "Easy Level (8x8)",
+        "medium": "Medium Level (12x12)",
+        "hard": "Hard Level (15x15)"
+      }
+    },
+    "tutorial": {
+      "title": "How to Play",
+      "steps": [
+        "Choose the maze level",
+        "Drag blocks from the left to \"My Program\" area",
+        "Arrange blocks in the order you want to execute",
+        "Use repetition and conditional blocks to create sequences",
+        "Drag blocks inside control blocks",
+        "To delete a block, drag it to the trash",
+        "Click \"Execute\" to see the car follow your instructions",
+        "The goal is to reach the flag! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Keyboard Shortcuts:",
+        "execute": "Ctrl/Cmd + Enter: Execute program",
+        "pause": "Ctrl/Cmd + P: Pause execution",
+        "stop": "Ctrl/Cmd + S: Stop execution",
+        "newMaze": "Ctrl/Cmd + N: New maze"
+      },
+      "understood": "Got it!"
+    },
+    "messages": {
+      "saved": "Program saved successfully!",
+      "loaded": "Program loaded successfully!",
+      "error": {
+        "loading": "Error loading program. Check the file.",
+        "browser": "Your browser doesn't support drag and drop. Please use a newer browser.",
+        "wall": "Oops! The car hit a wall! 💥",
+        "unexpected": "An unexpected error occurred. Please try again."
+      }
+    }
+  },
+  "es": {
+    "blocks": {
+      "robotStopped": "🛑 ¡Robot detenido!",
+      "stopRobot": "Detener Robot",
+      "checkFlag": "Llegó a la Bandera",
+      "movimento": "Movimientos",
+      "espelhamento": "Espejo",
+      "controle": "Control",
+      "logico": "Lógica",
+      "sensores": "Sensores",
+      "efeitos": "Efectos",
+      "returnToStart": "Volver al Inicio",
+      "checkWall": "Verificar Paredes",
+      "moveForward": "Avanzar",
+      "moveBackward": "Retroceder",
+      "turnRight": "Girar Derecha",
+      "turnLeft": "Girar Izquierda",
+      "mirrorH": "Espejo Horizontal",
+      "mirrorV": "Espejo Vertical",
+      "repeat": "Repetir",
+      "forever": "Para Siempre",
+      "if": "Si",
+      "elseIf": "SINO SI",
+      "else": "SINO",
+      "waitSeconds": "Esperar segundos",
+      "waitMs": "Aguardar ms",
+      "checkRightWall": "Hay Pared Derecha",
+      "checkLeftWall": "Hay Pared Izquierda",
+      "checkBackWall": "Hay Pared Atrás",
+      "emitTone": "Emitir Tono X Hz",
+      "stopTone": "Parar Tono",
+      "logico": "Lógica",
+      "operadorLogico": "Operadores Lógicos",
+      "verificadorLogico": "Verificadores Lógicos",
+      "logicalIf": "SI Lógico",
+      "condition": "Condición",
+      "checkWallRight": "Verificar Pared Derecha",
+      "checkWallLeft": "Verificar Pared Izquierda",
+      "condition1": "Condición 1",
+      "condition2": "Condición 2",
+      "logicalIf": "SI Lógico",
+      "condition": "Condición",
+      "checkWallRight": "Verificar Pared Derecha",
+      "checkWallLeft": "Verificar Pared Izquierda",
+      "checkWallBack": "Verificar Pared Atrás",
+      "returnBoolean": "Retorna Booleano"
+    },
+    "interface": {
+      "dropLogicBlocks": "Arrastra bloques lógicos aquí",
+      "availableBlocks": "Bloques Disponibles",
+      "dragInstructions": "Arrastra los bloques al área \"Mi Programa\" ➡️",
+      "blocksAvaliables": "Blocos",
+      "myProgram": "Mi Programa",
+      "dragHere": "Arrastra bloques aquí",
+      "dropBlocks": "Suelta los bloques aquí para crear tu programa",
+      "execute": "▶ Ejecutar",
+      "pause": "⏸ Pausar",
+      "stop": "⏹ Parar",
+      "clear": "🗑 Limpiar",
+      "save": "💾 Guardar Programa",
+      "open": "📂 Abrir Programa",
+      "newMaze": "🔄 Nuevo Laberinto",
+      "levels": {
+        "easy": "Nivel Fácil (8x8)",
+        "medium": "Nivel Medio (12x12)",
+        "hard": "Nivel Difícil (15x15)"
+      }
+    },
+    "tutorial": {
+      "title": "Cómo Jugar",
+      "steps": [
+        "Elige el nivel del laberinto",
+        "Arrastra los bloques de la izquierda al área \"Mi Programa\"",
+        "Organiza los bloques en el orden que deseas ejecutar",
+        "Usa bloques de repetición y condicionales para crear secuencias",
+        "Arrastra bloques dentro de los bloques de control",
+        "Para eliminar un bloque, arrástralo a la papelera",
+        "Haz clic en \"Ejecutar\" para ver el carro seguir tus instrucciones",
+        "¡El objetivo es llegar a la bandera! 🏁"
+      ],
+      "shortcuts": {
+        "title": "Atajos de Teclado:",
+        "execute": "Ctrl/Cmd + Enter: Ejecutar programa",
+        "pause": "Ctrl/Cmd + P: Pausar ejecución",
+        "stop": "Ctrl/Cmd + S: Parar ejecución",
+        "newMaze": "Ctrl/Cmd + N: Nuevo laberinto"
+      },
+      "understood": "¡Entendido!"
+    },
+    "messages": {
+      "saved": "¡Programa guardado con éxito!",
+      "loaded": "¡Programa cargado con éxito!",
+      "error": {
+        "loading": "Error al cargar el programa. Verifica el archivo.",
+        "browser": "Tu navegador no soporta arrastrar y soltar. Por favor, usa un navegador más reciente.",
+        "wall": "¡Ups! ¡El carro chocó contra una pared! 💥",
+        "unexpected": "Ocurrió un error inesperado. Por favor, intenta de nuevo."
+      }
+    }
+  }
+}
+
+index.html:
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto de Programação</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/touch.css">
+  
+</head>
+<body>
+    <!-- Configurações e idioma -->
+    <div class="config-container">
+        <div class="language-select">
+            <select id="language-select">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+            </select>
+        </div>
+        <div class="theme-switch">
+            <select id="theme-toggle">
+                <option value="light">☀️ Light</option>
+                <option value="dark">🌙 Dark</option>
+                <option value="forest">🌲 Forest</option>
+                <option value="purple">💜 Purple</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Container principal com abas -->
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('maze')">Labirinto</button>
+            <button class="tab-button" onclick="switchTab('program')">Programação</button>
+        </div>
+
+        <!-- Aba do Labirinto -->
+        <div id="maze-tab" class="tab-content active">
+            <div id="labirinto-container">
+                <div id="nivel-controles">
+                    <select id="nivel-select">
+                        <option value="facil" data-i18n="interface.levels.easy">Nível Fácil (8x8)</option>
+                        <option value="medio" data-i18n="interface.levels.medium">Nível Médio (12x12)</option>
+                        <option value="dificil" data-i18n="interface.levels.hard">Nível Difícil (15x15)</option>
+                    </select>
+                    <button id="novo-labirinto" data-i18n="interface.newMaze">🔄 Novo Labirinto</button>
+                </div>
+                <div id="labirinto"></div>
+                <div id="controles">
+                    <button id="executar" data-i18n="interface.execute">▶ Executar</button>
+                    <button id="pausar" disabled data-i18n="interface.pause">⏸ Pausar</button>
+                    <button id="parar" disabled data-i18n="interface.stop">⏹ Parar</button>
+                    <button id="limpar" data-i18n="interface.clear">🗑 Limpar</button>
+                    <button id="salvar-programa" data-i18n="interface.save">💾 Salvar Programa</button>
+                    <button id="abrir-programa" data-i18n="interface.open">📂 Abrir Programa</button>
+                    <input type="file" id="input-abrir-programa" accept="application/json" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba de Programação -->
+        <div id="program-tab" class="tab-content">
+            <div class="programming-container">
+                <div id="blocos-disponiveis">
+                    <h2 data-i18n="interface.availableBlocks">Blocos Disponíveis</h2>
+                    <p class="instrucao" data-i18n="interface.dragInstructions">Arraste os blocos para a área "Meu Programa" ➡️</p>
+                </div>
+
+                <div id="programa-container">
+                    <div id="programa-header">
+                        <h2 data-i18n="interface.myProgram">Meu Programa</h2>
+                        <div id="resize-handle" class="touch-handle">↔</div>
+                    </div>
+                    <div class="instrucao-programa" data-i18n="interface.dragInstructions">
+                        Arraste os blocos para esta área e organize-os na ordem que deseja executar
+                    </div>
+                    <div id="programa">
+                        <div id="sequencia-blocos" class="bloco-container drop-zone">
+                            <div class="programa-placeholder" data-i18n="interface.dropBlocks">
+                                Solte os blocos aqui para criar seu programa
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="lixeira" title="Arraste blocos aqui para excluir" class="touch-area">🗑️</div>
+        </div>
+    </div>
+
+    <!-- Elementos auxiliares -->
+    <div id="mensagem"></div>
+    <div id="tutorial" class="tutorial">
+        <div class="tutorial-content">
+            <h3 data-i18n="tutorial.title">Como Jogar</h3>
+            <ol>
+                <li data-i18n="tutorial.steps.0">Escolha o nível do labirinto</li>
+                <li data-i18n="tutorial.steps.1">Arraste os blocos da esquerda para a área "Meu Programa"</li>
+                <li data-i18n="tutorial.steps.2">Organize os blocos na ordem que deseja executar</li>
+                <li data-i18n="tutorial.steps.3">Use os blocos de repetição e condicionais para criar sequências</li>
+                <li data-i18n="tutorial.steps.4">Arraste blocos para dentro dos blocos de controle</li>
+                <li data-i18n="tutorial.steps.5">Para excluir um bloco, arraste-o até a lixeira</li>
+                <li data-i18n="tutorial.steps.6">Clique em "Executar" para ver o carro seguir suas instruções</li>
+                <li data-i18n="tutorial.steps.7">O objetivo é chegar na bandeira! 🏁</li>
+                <li data-i18n="tutorial.steps.logical">Use blocos lógicos para criar condições complexas com AND e OR</li>
+                <li data-i18n="tutorial.steps.jsonDrop">Arraste arquivos JSON para a área "Meu Programa" para carregar programas salvos</li>
+            </ol>
+            <div class="tutorial-atalhos">
+                <h4 data-i18n="tutorial.shortcuts.title">Atalhos do Teclado:</h4>
+                <ul>
+                    <li data-i18n="tutorial.shortcuts.execute">Ctrl/Cmd + Enter: Executar programa</li>
+                    <li data-i18n="tutorial.shortcuts.pause">Ctrl/Cmd + P: Pausar execução</li>
+                    <li data-i18n="tutorial.shortcuts.stop">Ctrl/Cmd + S: Parar execução</li>
+                    <li data-i18n="tutorial.shortcuts.newMaze">Ctrl/Cmd + N: Novo labirinto</li>
+                </ul>
+            </div>
+            <button id="fechar-tutorial" data-i18n="tutorial.understood">Entendi!</button>
+        </div>
+    </div>
+
+    <button id="ajuda" class="botao-ajuda touch-area">?</button>
+
+    <!-- Scripts -->
+    <script src="js/blocks.js" type="module"></script>
+    <script src="js/main.js" type="module"></script>
+    <script>
+        function switchTab(tabId) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Add active class to selected tab
+            const selectedTab = tabId === 'maze' ? 'maze-tab' : 'program-tab';
+            document.getElementById(selectedTab).classList.add('active');
+            
+            // Add active class to clicked button
+            const buttonIndex = tabId === 'maze' ? 0 : 1;
+            document.querySelectorAll('.tab-button')[buttonIndex].classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
+js/blocks.js:
 // blocks.js
 import { i18nThemeManager } from './i18n-theme-manager.js';
 import touchManager from './touch-manager.js';
@@ -1255,7 +3073,7 @@ export { mostrarMensagem, BLOCOS_CONFIG };
 
 
 
-i18n-theme-manager.js:
+js/i18n-theme-manager.js:
 // i18n-theme-manager.js
 
 class I18nThemeManager {
@@ -1268,7 +3086,7 @@ class I18nThemeManager {
 
     async initialize() {
         try {
-            const response = await fetch('translations.json');
+            const response = await fetch('data/translations.json');
             this.translations = await response.json();
             
             // Initialize language
@@ -1304,10 +3122,9 @@ class I18nThemeManager {
     setupThemeToggle() {
         const toggle = document.getElementById('theme-toggle');
         if (toggle) {
-            toggle.checked = this.themePreference === 'dark';
+            toggle.value = this.themePreference;
             toggle.addEventListener('change', (e) => {
-                const newTheme = e.target.checked ? 'dark' : 'light';
-                this.applyTheme(newTheme);
+                this.applyTheme(e.target.value);
             });
         }
     }
@@ -1373,176 +3190,7 @@ class I18nThemeManager {
 export const i18nThemeManager = new I18nThemeManager();
 export default i18nThemeManager;
 
-index.html:
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Labirinto de Programação</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="themes.css">
-    <link rel="stylesheet" href="touch.css">
-  
-</head>
-<body>
-    <!-- Configurações e idioma -->
-    <div class="config-container">
-        <div class="language-select">
-            <select id="language-select">
-                <option value="pt">Português</option>
-                <option value="en">English</option>
-                <option value="es">Español</option>
-            </select>
-        </div>
-        <div class="theme-switch">
-            <input type="checkbox" id="theme-toggle">
-            <label for="theme-toggle"></label>
-        </div>
-    </div>
-
-    <!-- Container principal com abas -->
-    <div class="tab-container">
-        <div class="tab-buttons">
-            <button class="tab-button active" onclick="switchTab('maze')">Labirinto</button>
-            <button class="tab-button" onclick="switchTab('program')">Programação</button>
-        </div>
-
-        <!-- Aba do Labirinto -->
-        <div id="maze-tab" class="tab-content active">
-            <div id="labirinto-container">
-                <div id="nivel-controles">
-                    <select id="nivel-select">
-                        <option value="facil" data-i18n="interface.levels.easy">Nível Fácil (8x8)</option>
-                        <option value="medio" data-i18n="interface.levels.medium">Nível Médio (12x12)</option>
-                        <option value="dificil" data-i18n="interface.levels.hard">Nível Difícil (15x15)</option>
-                    </select>
-                    <button id="novo-labirinto" data-i18n="interface.newMaze">🔄 Novo Labirinto</button>
-                </div>
-                <div id="labirinto"></div>
-                <div id="controles">
-                    <button id="executar" data-i18n="interface.execute">▶ Executar</button>
-                    <button id="pausar" disabled data-i18n="interface.pause">⏸ Pausar</button>
-                    <button id="parar" disabled data-i18n="interface.stop">⏹ Parar</button>
-                    <button id="limpar" data-i18n="interface.clear">🗑 Limpar</button>
-                    <button id="salvar-programa" data-i18n="interface.save">💾 Salvar Programa</button>
-                    <button id="abrir-programa" data-i18n="interface.open">📂 Abrir Programa</button>
-                    <input type="file" id="input-abrir-programa" accept="application/json" style="display: none;">
-                </div>
-            </div>
-        </div>
-
-        <!-- Aba de Programação -->
-        <div id="program-tab" class="tab-content">
-            <div class="programming-container">
-                <div id="blocos-disponiveis">
-                    <h2 data-i18n="interface.availableBlocks">Blocos Disponíveis</h2>
-                    <p class="instrucao" data-i18n="interface.dragInstructions">Arraste os blocos para a área "Meu Programa" ➡️</p>
-                </div>
-
-                <div id="programa-container">
-                    <div id="programa-header">
-                        <h2 data-i18n="interface.myProgram">Meu Programa</h2>
-                        <div id="resize-handle" class="touch-handle">↔</div>
-                    </div>
-                    <div class="instrucao-programa" data-i18n="interface.dragInstructions">
-                        Arraste os blocos para esta área e organize-os na ordem que deseja executar
-                    </div>
-                    <div id="programa">
-                        <div id="sequencia-blocos" class="bloco-container drop-zone">
-                            <div class="programa-placeholder" data-i18n="interface.dropBlocks">
-                                Solte os blocos aqui para criar seu programa
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="lixeira" title="Arraste blocos aqui para excluir" class="touch-area">🗑️</div>
-        </div>
-    </div>
-
-    <!-- Elementos auxiliares -->
-    <div id="mensagem"></div>
-    <div id="tutorial" class="tutorial">
-        <div class="tutorial-content">
-            <h3 data-i18n="tutorial.title">Como Jogar</h3>
-            <ol>
-                <li data-i18n="tutorial.steps.0">Escolha o nível do labirinto</li>
-                <li data-i18n="tutorial.steps.1">Arraste os blocos da esquerda para a área "Meu Programa"</li>
-                <li data-i18n="tutorial.steps.2">Organize os blocos na ordem que deseja executar</li>
-                <li data-i18n="tutorial.steps.3">Use os blocos de repetição e condicionais para criar sequências</li>
-                <li data-i18n="tutorial.steps.4">Arraste blocos para dentro dos blocos de controle</li>
-                <li data-i18n="tutorial.steps.5">Para excluir um bloco, arraste-o até a lixeira</li>
-                <li data-i18n="tutorial.steps.6">Clique em "Executar" para ver o carro seguir suas instruções</li>
-                <li data-i18n="tutorial.steps.7">O objetivo é chegar na bandeira! 🏁</li>
-                <li data-i18n="tutorial.steps.logical">Use blocos lógicos para criar condições complexas com AND e OR</li>
-                <li data-i18n="tutorial.steps.jsonDrop">Arraste arquivos JSON para a área "Meu Programa" para carregar programas salvos</li>
-            </ol>
-            <div class="tutorial-atalhos">
-                <h4 data-i18n="tutorial.shortcuts.title">Atalhos do Teclado:</h4>
-                <ul>
-                    <li data-i18n="tutorial.shortcuts.execute">Ctrl/Cmd + Enter: Executar programa</li>
-                    <li data-i18n="tutorial.shortcuts.pause">Ctrl/Cmd + P: Pausar execução</li>
-                    <li data-i18n="tutorial.shortcuts.stop">Ctrl/Cmd + S: Parar execução</li>
-                    <li data-i18n="tutorial.shortcuts.newMaze">Ctrl/Cmd + N: Novo labirinto</li>
-                </ul>
-            </div>
-            <button id="fechar-tutorial" data-i18n="tutorial.understood">Entendi!</button>
-        </div>
-    </div>
-
-    <button id="ajuda" class="botao-ajuda touch-area">?</button>
-
-    <!-- Scripts -->
-    <script src="blocks.js" type="module"></script>
-    <script src="main.js" type="module"></script>
-    <script>
-        function switchTab(tabId) {
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-
-            // Add active class to selected tab
-            const selectedTab = tabId === 'maze' ? 'maze-tab' : 'program-tab';
-            document.getElementById(selectedTab).classList.add('active');
-            
-            // Add active class to clicked button
-            const buttonIndex = tabId === 'maze' ? 0 : 1;
-            document.querySelectorAll('.tab-button')[buttonIndex].classList.add('active');
-        }
-    </script>
-</body>
-</html>
-
-LICENSE:
-MIT License
-
-Copyright (c) 2024 Iago lira
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-main.js:
+js/main.js:
 // main.js
 import { gerenciadorBlocos, mostrarMensagem, BLOCOS_CONFIG } from './blocks.js';
 import { i18nThemeManager } from './i18n-theme-manager.js';
@@ -2625,1050 +4273,7 @@ export {
     executarBlocoLogico
 };
 
-styles.css:
-/* styles.css */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: var(--bg-color);
-    width: 100%;
-    height: 100vh;
-    overflow-x: hidden;
-    /* Remover estas propriedades que estavam causando a divisão em 3 colunas */
-    /* display: grid;
-    grid-template-columns: minmax(250px, auto) 1fr minmax(250px, auto);
-    gap: 20px; */
-}
-
-/* Painéis principais */
-#blocos-disponiveis,
-#labirinto-container,{
-    position: relative;
-    resize: horizontal;
-    overflow: auto;
-    min-width: 250px;
-    max-width: 800px;
-}
-
-.resize-handle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 5px;
-    cursor: ew-resize;
-    background: transparent;
-    transition: background 0.3s;
-}
-
-.resize-handle:hover,
-.resize-handle.active {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-/* Instruções */
-.instrucao {
-    color: #666;
-    font-size: 14px;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #fff3cd;
-    border-radius: 5px;
-    border-left: 4px solid #ffc107;
-}
-
-.instrucao-programa {
-    color: #666;
-    font-size: 14px;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #e7f3ff;
-    border-radius: 5px;
-    border-left: 4px solid #2196F3;
-}
-
-
-/* Blocos */
-.bloco {
-    padding: 10px;
-    margin: 8px 0;
-    border-radius: 5px;
-    cursor: move;
-    color: white;
-    font-weight: bold;
-    min-width: 150px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-    user-select: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Blocos existentes */
-#programa .bloco-movimento { background-color: #4CAF50; }
-#programa .bloco-espelhamento { background-color: #E91E63; }
-#programa .bloco-controle { background-color: #2196F3; }
-#programa .bloco-logico { background-color: #9c27b0; }
-#programa .bloco-sensores { background-color: #795548; } 
-#programa .bloco-efeitos { background-color: #FF9800; }
-
-/* Novos blocos SENÃO SE e SENÃO */
-#programa .bloco-senaoSe { background-color: #FF9800; }
-#programa .bloco-senao { background-color: #FF5722; }
-
-/* Novos blocos para verificar paredes */
-#programa .bloco-temParedeDireita { background-color: #795548; }
-#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
-#programa .bloco-temParedeTras { background-color: #5D4037; }
-
-/* Novo bloco Aguardar */
-#programa .bloco-aguardar { background-color: #3F51B5; }
-
-/* Blocos na área disponível */
-#blocos-disponiveis .bloco { opacity: 0.85; }
-
-/* Hover e Dragging */
-.bloco:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.bloco.dragging {
-    opacity: 0.5;
-    transform: scale(1.05);
-}
-
-.bloco-handle {
-    cursor: move;
-    font-size: 20px;
-    padding: 0 5px;
-}
-
-/* Containers */
-.bloco-container {
-    min-height: 50px;
-    padding: 10px;
-    margin: 5px 0 5px 20px;
-    border-left: 2px dashed rgba(255, 255, 255, 0.4);
-    background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 5px;
-}
-
-.bloco-container.drag-over {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Placeholder */
-.container-placeholder {
-    color: rgba(255, 255, 255, 0.7);
-    text-align: center;
-    padding: 10px;
-    font-style: italic;
-    font-size: 0.9em;
-}
-
-/* Estilização aprimorada para #nivel-select */
-#nivel-select {
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: 2px solid #2196F3;
-    background-color: #ffffff;
-    font-size: 16px;
-    color: #333333;
-    appearance: none; /* Remove a seta padrão em alguns navegadores */
-    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path d="M6 8.586L1.707 4.293 3.121 2.879 6 5.758l2.879-2.879 1.414 1.414L6 8.586z" fill="%23333333"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px;
-    cursor: pointer;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-#nivel-select:hover {
-    border-color: #1976D2;
-}
-
-#nivel-select:focus {
-    outline: none;
-    border-color: #1976D2;
-    box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
-}
-
-/* Área do programa */
-/* E adicione estas novas definições */
-#programa-container {
-    flex: 1;
-    min-width: 300px;
-    height: 100%;
-    overflow: auto;
-    position: relative;
-}
-
-/* Ajuste do header do programa */
-#programa-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-
-#resize-handle {
-    cursor: ew-resize;
-    padding: 5px;
-    font-size: 20px;
-}
-
-/* Conteúdo do programa */
-#programa {
-    width: 100%;
-    height: calc(100% - 60px); /* Ajusta para considerar o header */
-    overflow-y: auto;
-    padding: 10px;
-    box-sizing: border-box;
-    background: var(--container-bg);
-}
-
-/* Área de soltura */
-.drop-zone {
-    min-height: 100px;
-    border: 2px dashed #ccc;
-    border-radius: 5px;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
-}
-
-.drop-zone.drag-over {
-    border-color: #2196F3;
-    background-color: #e3f2fd;
-}
-
-#sequencia-blocos {
-    min-height: 200px;
-}
-
-.programa-placeholder {
-    color: #999;
-    text-align: center;
-    padding: 20px;
-    font-style: italic;
-}
-
-/* Labirinto */
-#labirinto {
-    position: relative;
-    margin: 20px auto;
-    background: #fff;
-    border: 2px solid #333;
-    overflow: hidden; /* Evitar que o carro apareça fora do labirinto durante transições */
-}
-
-.celula {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.parede {
-    background-color: #8b4513;
-}
-
-.caminho {
-    background-color: #ffffff;
-}
-
-/* Atualizar o estilo do carro */
-.carro {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    transform-origin: center;
-    transition: all 0.3s ease;
-    z-index: 10;
-    transform: translate(-50%, -50%); /* Garante a centralização do elemento */
-}
-
-.carro svg {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-
-.chegada {
-    position: absolute;
-    font-size: 24px;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-}
-
-/* Controles */
-#nivel-controles {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-#nivel-select {
-    /* Estilização já atualizada anteriormente */
-}
-
-#controles {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s;
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-#executar { background-color: #4CAF50; color: white; }
-#pausar { background-color: #ff9800; color: white; }
-#parar { background-color: #f44336; color: white; }
-#limpar { background-color: #9e9e9e; color: white; }
-#novo-labirinto { background-color: #2196F3; color: white; }
-#salvar-programa { background-color: #FFC107; color: white; } /* Novo Botão Salvar */
-#abrir-programa { background-color: #00BCD4; color: white; } /* Novo Botão Abrir */
-
-/* Mensagens */
-#mensagem {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 20px;
-    border-radius: 5px;
-    display: none;
-    z-index: 1000;
-}
-
-.success { background-color: #4CAF50; color: white; }
-.error { background-color: #f44336; color: white; }
-.info { background-color: #2196F3; color: white; }
-
-/* Tutorial */
-.tutorial {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0,0,0,0.7);
-    z-index: 2000;
-    align-items: center;
-    justify-content: center;
-}
-
-.tutorial-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 500px;
-    width: 90%;
-}
-
-.tutorial-content h3 {
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.tutorial-content ol {
-    margin-left: 20px;
-    margin-bottom: 20px;
-}
-
-.tutorial-content li {
-    margin: 10px 0;
-    color: #666;
-}
-
-.botao-ajuda {
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #2196F3;
-    color: white;
-    font-size: 20px;
-    z-index: 1000;
-}
-
-/* Lixeira */
-#lixeira {
-        position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #f5f5f5;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
-    z-index: 1000;
-}
-
-#lixeira.lixeira-ativa {
-    background-color: #ff4444;
-    transform: scale(1.1);
-}
-
-/* Blocos de espelhamento */
-.bloco-espelhamento {
-    background-color: #E91E63;
-}
-
-/* Container de blocos aninhados */
-.bloco-container {
-    min-height: 50px;
-    padding: 10px;
-    margin: 5px 0 5px 20px;
-    border-left: 2px dashed rgba(255, 255, 255, 0.3);
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-}
-
-.bloco-container.drag-over {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Melhorar visual dos blocos */
-.bloco-conteudo {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-grow: 1;
-}
-
-/* Novos blocos */
-#programa .bloco-senaoSe { background-color: #FF9800; }
-#programa .bloco-senao { background-color: #FF5722; }
-
-/* Novos blocos para verificar paredes */
-#programa .bloco-temParedeDireita { background-color: #795548; }
-#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
-#programa .bloco-temParedeTras { background-color: #5D4037; }
-
-/* Novo bloco Aguardar */
-#programa .bloco-aguardar { background-color: #3F51B5; }
-
-/* Ícones para os blocos de verificar paredes (Opcional) */
-#programa .bloco-temParedeDireita::before,
-#programa .bloco-temParedeEsquerda::before,
-#programa .bloco-temParedeTras::before {
-    content: '🛑'; /* Ícone de parede */
-    margin-right: 5px;
-}
-
-/* Novos blocos de Áudio */
-#programa .bloco-emitirTom { background-color: #FF9800; }
-#programa .bloco-pararTom { background-color: #FF5722; }
-
-/* Ícones para os blocos de Áudio (Opcional) */
-#programa .bloco-emitirTom::before {
-    content: '🔊'; /* Ícone de alto-falante */
-    margin-right: 5px;
-}
-
-#programa .bloco-pararTom::before {
-    content: '🔇'; /* Ícone de alto-falante mudo */
-    margin-right: 5px;
-}
-
-const estilosNovos = `
-.bloco-logico {
-    background-color: #9c27b0;
-}
-
-.bloco-operadorLogico {
-    background-color: #FF5722;
-}
-
-.bloco-verificadorLogico {
-    background-color: #795548;
-}
-
-.bloco-container-logico {
-    min-height: 40px;
-    padding: 8px;
-    margin: 5px 0;
-    background-color: rgba(0, 0, 0, 0.1);
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-}
-
-.container-titulo {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 5px;
-}
-
-/* Indicador visual para blocos que retornam valores booleanos */
-/* Indicador de retorno booleano */
-[data-retorna-logico="true"]::after {
-    content: "→ " attr(data-tipo);
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8em;
-    opacity: 0.7;
-    color: white;
-}
-
-
-
-
-/* tab */
-/* Container principal das tabs */
-.tab-container {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-}
-
-/* Botões das tabs */
-.tab-buttons {
-    display: flex;
-    gap: 10px;
-    padding: 10px 20px;
-    background: var(--bg-color);
-}
-
-.tab-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px 5px 0 0;
-    cursor: pointer;
-    font-weight: bold;
-    background-color: #e0e0e0;
-    color: #666;
-    transition: all 0.3s;
-}
-
-.tab-button.active {
-    background-color: #2196F3;
-    color: white;
-}
-
-/* Conteúdo das tabs */
-.tab-content {
-    flex: 1;
-    display: none;
-    background: var(--bg-color);
-    padding: 20px;
-    overflow: auto;
-    margin: 0; /* Remove margens */
-}
-
-/* Estrutura geral */
-.tab-content.active {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-/* Container do labirinto */
-#maze-tab {
-    justify-content: center; /* Centraliza o conteúdo */
-}
-
-#labirinto-container {
-    max-width: 1200px;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Container de programação */
-.programming-container {
-    display: flex;
-    gap: 20px;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-/* Blocos disponíveis */
-#blocos-disponiveis {
-    width: 300px;
-    min-width: 300px;
-    flex-shrink: 0; /* Impede que encolha */
-    overflow-y: auto;
-    padding: 20px;
-    resize: horizontal;
-}
-
-/* Container de programação principal */
-.programming-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    gap: 0;
-    overflow: hidden; /* Previne scroll horizontal indesejado */
-}
-
-/* Configurações e idioma */
-.config-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 1000;
-}
-
-themes.css:
-/* Theme variables */
-:root {
-  /* Light theme (default) */
-  --bg-color: #f0f8ff;
-  --text-color: #333;
-  --border-color: #ccc;
-  --block-bg: #fff;
-  --block-text: #fff;
-  --wall-color: #8b4513;
-  --path-color: #ffffff;
-  --tutorial-bg: rgba(0,0,0,0.7);
-  --tutorial-content-bg: white;
-  --tutorial-text: #666;
-  --message-bg: rgba(0,0,0,0.8);
-  --container-bg: #f5f5f5;
-  --placeholder-color: #999;
-  --instruction-bg: #fff3cd;
-  --instruction-border: #ffc107;
-  --program-instruction-bg: #e7f3ff;
-  --program-instruction-border: #2196F3;
-  --select-bg: #ffffff;
-  --select-text: #333333;
-  --select-border: #2196F3;
-  --button-disabled: rgba(0,0,0,0.3);
-  --maze-border: #333;
-}
-
-/* Dark theme */
-[data-theme="dark"] {
-  --bg-color: #1a1a1a;
-  --text-color: #fff;
-  --border-color: #444;
-  --block-bg: #333;
-  --block-text: #fff;
-  --wall-color: #4a3728;
-  --path-color: #2a2a2a;
-  --tutorial-bg: rgba(0,0,0,0.9);
-  --tutorial-content-bg: #333;
-  --tutorial-text: #ccc;
-  --message-bg: rgba(255,255,255,0.9);
-  --container-bg: #2a2a2a;
-  --placeholder-color: #777;
-  --instruction-bg: #2c2618;
-  --instruction-border: #856404;
-  --program-instruction-bg: #1a2634;
-  --program-instruction-border: #0d47a1;
-  --select-bg: #333333;
-  --select-text: #ffffff;
-  --select-border: #1976D2;
-  --button-disabled: rgba(255,255,255,0.3);
-  --maze-border: #666;
-}
-
-/* Base styles */
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  min-height: 100vh;
-  width: 100%;
-  overflow-x: hidden;
-}
-
-/* Theme switcher styles */
-.theme-switch {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 1000;
-}
-
-.theme-switch label {
-  cursor: pointer;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-  background-color: #ccc;
-  border-radius: 12px;
-  position: relative;
-  transition: background-color 0.3s;
-}
-
-.theme-switch input {
-  display: none;
-}
-
-.theme-switch label::after {
-  content: '☀️';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: white;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.3s, content 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.theme-switch input:checked + label {
-  background-color: #666;
-}
-
-.theme-switch input:checked + label::after {
-  transform: translateX(26px);
-  content: '🌙';
-}
-
-/* Language selector styles */
-.language-select {
-  position: fixed;
-  top: 20px;
-  right: 90px;
-  z-index: 1000;
-}
-
-.language-select select {
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 2px solid var(--select-border);
-  background-color: var(--select-bg);
-  color: var(--select-text);
-  font-size: 14px;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.language-select select:hover {
-  border-color: var(--select-border);
-}
-
-/* Theme-specific element styles */
-#labirinto {
-  border-color: var(--maze-border);
-}
-
-.parede {
-  background-color: var(--wall-color);
-}
-
-.caminho {
-  background-color: var(--path-color);
-}
-
-.instrucao {
-  background-color: var(--instruction-bg);
-  border-left-color: var(--instruction-border);
-}
-
-.instrucao-programa {
-  background-color: var(--program-instruction-bg);
-  border-left-color: var(--program-instruction-border);
-}
-
-#programa {
-  background: var(--container-bg);
-}
-
-.programa-placeholder {
-  color: var(--placeholder-color);
-}
-
-button:disabled {
-  background-color: var(--button-disabled);
-}
-
-touch.css:
-/* ... (código anterior permanece o mesmo) */
-
-/* Ajustes para telas pequenas */
-@media (max-width: 768px) {
-    .touch-device .language-select,
-    .touch-device .theme-switch {
-        position: relative;
-        top: auto;
-        right: auto;
-        margin: 10px;
-    }
-    
-    .touch-device body {
-        display: flex;
-        flex-direction: column;
-        padding: 10px;
-        gap: 10px;
-    }
-
-    .touch-device #blocos-disponiveis {
-        width: 100%;
-        max-width: none;
-        height: 200px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        display: flex;
-        flex-direction: row;
-        padding: 10px;
-    }
-
-    .touch-device #blocos-disponiveis .grupo-blocos {
-        min-width: 200px;
-        margin-right: 15px;
-        height: 100%;
-        overflow-y: auto;
-    }
-
-    .touch-device #labirinto-container {
-        width: 100%;
-        max-width: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .touch-device #labirinto {
-        max-width: 100%;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .touch-device #programa-container {
-        width: 100%;
-        max-width: none;
-        height: 300px;
-    }
-
-    .touch-device #controles {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        padding: 10px;
-    }
-
-    .touch-device button {
-        width: 100%;
-        margin: 0;
-    }
-
-    .touch-device #nivel-controles {
-        width: 100%;
-        flex-direction: column;
-        gap: 8px;
-        margin-bottom: 10px;
-    }
-
-    .touch-device #nivel-select {
-        width: 100%;
-    }
-
-    .touch-device .bloco {
-        margin: 5px 0;
-        width: 100%;
-    }
-
-    .touch-device .bloco-container {
-        margin-left: 20px;
-        padding: 8px;
-    }
-
-    /* Melhorar estilo do tutorial em telas pequenas */
-    .touch-device .tutorial-content {
-        width: 95%;
-        max-height: 90vh;
-        overflow-y: auto;
-        padding: 15px;
-        margin: 10px;
-    }
-
-    .touch-device .tutorial-content ol {
-        padding-left: 20px;
-    }
-
-    .touch-device .tutorial-atalhos {
-        display: none; /* Ocultar atalhos em dispositivos touch */
-    }
-
-    /* Ajustar posição da lixeira e botão de ajuda */
-    .touch-device #lixeira {
-        bottom: 10px;
-        left: 10px;
-        width: 60px;
-        height: 60px;
-    }
-
-    .touch-device #ajuda {
-        bottom: 10px;
-        right: 10px;
-        width: 60px;
-        height: 60px;
-    }
-
-    /* Melhorar layout dos blocos em tela pequena */
-    .touch-device .bloco-conteudo {
-        flex-wrap: wrap;
-        gap: 5px;
-    }
-
-    .touch-device .bloco input,
-    .touch-device .bloco select {
-        width: 100%;
-        max-width: 150px;
-    }
-
-    /* Ajustar menu de configurações */
-    .touch-device .config-menu {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: var(--bg-color);
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 1000;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    /* Adicionar suporte para gestos de zoom */
-    .touch-device #labirinto {
-        transform-origin: center;
-        transition: transform 0.1s ease-out;
-    }
-
-    /* Melhorar feedback visual durante o arraste */
-    .touch-device .bloco.dragging {
-        position: fixed;
-        z-index: 1000;
-        width: 90%;
-        max-width: 300px;
-        opacity: 0.9;
-    }
-
-    /* Ajustar espaçamento de blocos aninhados */
-    .touch-device .bloco-container .bloco-container {
-        margin-left: 15px;
-    }
-
-    /* Ajustar mensagens de feedback */
-    .touch-device #mensagem {
-        width: 90%;
-        max-width: none;
-        left: 5%;
-        transform: none;
-        padding: 15px;
-        font-size: 16px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 50px;
-    }
-
-    /* Melhorar visualização de placeholders */
-    .touch-device .container-placeholder,
-    .touch-device .programa-placeholder {
-        padding: 20px;
-        text-align: center;
-        font-size: 14px;
-    }
-
-    /* Ajustar seletores de idioma e tema em modo landscape */
-    @media (orientation: landscape) {
-        .touch-device .config-menu {
-            position: relative;
-            padding: 5px;
-        }
-
-        .touch-device #blocos-disponiveis {
-            height: 150px;
-        }
-
-        .touch-device #programa-container {
-            height: 200px;
-        }
-
-        .touch-device #controles {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    /* Ajustes específicos para telas muito pequenas */
-    @media (max-width: 320px) {
-        .touch-device .bloco {
-            font-size: 14px;
-        }
-
-        .touch-device button {
-            font-size: 14px;
-            padding: 8px 12px;
-        }
-
-        .touch-device #lixeira,
-        .touch-device #ajuda {
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-        }
-    }
-}
-
-touch-manager.js:
+js/touch-manager.js:
 // touch-manager.js
 
 export class TouchManager {
@@ -3899,321 +4504,27 @@ export class TouchManager {
 
 export default new TouchManager();
 
-translations.json:
-{
-  "pt": {
-    "blocks": {
-      "robotStopped": "🛑 Robô parado!",
-      "stopRobot": "Parar Robô",
-      "checkFlag": "Chegou na Bandeira",
-      "movimento": "Movimentos",
-      "espelhamento": "Espelhamento",
-      "controle": "Controle",
-      "logico": "Lógica",
-      "sensores": "Sensores",
-      "efeitos": "Efeitos",
-      "voltarInicio": "Voltar ao Início",
-      "verificarParede": "Verificar Paredes",
-      "audio": "Áudio",
-      "moveForward": "Andar para Frente",
-      "moveBackward": "Andar para Trás",
-      "turnRight": "Virar à Direita",
-      "turnLeft": "Virar à Esquerda",
-      "mirrorH": "Espelhar Horizontal",
-      "mirrorV": "Espelhar Vertical",
-      "repeat": "Repetir",
-      "forever": "Para Sempre",
-      "if": "Se",
-      "elseIf": "SENÃO SE",
-      "else": "SENÃO",
-      "waitSeconds": "Esperar segundos",
-      "waitMs": "Aguardar ms",
-      "checkRightWall": "Tem Parede Direita",
-      "checkLeftWall": "Tem Parede Esquerda",
-      "checkBackWall": "Tem Parede Trás",
-      "emitTone": "Emitir Tom de X Hz",
-      "stopTone": "Parar Tom",
-      "seconds": "segundos",
-      "ms": "ms",
-      "times": "vezes",
-      "logico": "Lógica",
-      "operadorLogico": "Operadores Lógicos",
-      "verificadorLogico": "Verificadores Lógicos",
-      "logicalIf": "SE Lógico",
-      "condition": "Condição",
-      "checkWallRight": "Verificar Parede Direita",
-      "checkWallLeft": "Verificar Parede Esquerda",
-      "condition1": "Condição 1",
-      "condition2": "Condição 2",
-      "logicalIf": "SE Lógico",
-      "condition": "Condição",
-      "checkWallRight": "Verificar Parede Direita",
-      "checkWallLeft": "Verificar Parede Esquerda",
-      "checkWallBack": "Verificar Parede Trás",
-      "returnBoolean": "Retorna Booleano"
-    },
-    "interface": {
-      "dropLogicBlocks": "Arraste blocos lógicos aqui",
-      "availableBlocks": "Blocos Disponíveis",
-      "dragInstructions": "Arraste os blocos para a área \"Meu Programa\" ➡️",
-      "myProgram": "Meu Programa",
-      "dragHere": "Arraste blocos aqui",
-      "dropBlocks": "Solte os blocos aqui para criar seu programa",
-      "execute": "▶ Executar",
-      "pause": "⏸ Pausar",
-      "stop": "⏹ Parar",
-      "clear": "🗑 Limpar",
-      "save": "💾 Salvar Programa",
-      "open": "📂 Abrir Programa",
-      "newMaze": "🔄 Novo Labirinto",
-      "levels": {
-        "easy": "Nível Fácil (8x8)",
-        "medium": "Nível Médio (12x12)",
-        "hard": "Nível Difícil (15x15)"
-      }
-    },
-    "messages": {
-      "saved": "Programa salvo com sucesso!",
-      "loaded": "Programa carregado com sucesso!",
-      "programComplete": "Programa concluído!",
-      "victory": "🎉 Parabéns! Você chegou ao objetivo!",
-      "waiting": "Aguardando {ms} milissegundos...",
-      "audio": {
-        "playing": "Reproduzindo tom de {frequency} Hz",
-        "stopped": "Tom parado"
-      },
-      "error": {
-        "loading": "Erro ao carregar o programa. Verifique o arquivo.",
-        "saving": "Erro ao salvar o programa.",
-        "browser": "Seu navegador não suporta arrastar e soltar. Por favor, use um navegador mais recente.",
-        "wall": "Oops! O carro bateu em uma parede! 💥",
-        "unexpected": "Ocorreu um erro inesperado. Tente novamente.",
-        "unknownBlock": "Bloco desconhecido detectado!",
-        "nestedBlock": "Não é possível aninhar este tipo de bloco aqui.",
-        "audioPlaying": "Já existe um tom sendo reproduzido.",
-        "noAudio": "Nenhum tom está sendo reproduzido.",
-        "audio": "Erro ao manipular áudio."
-      }
-    },
-    "tutorial": {
-      "title": "Como Jogar",
-      "steps": [
-        "Escolha o nível do labirinto",
-        "Arraste os blocos da esquerda para a área \"Meu Programa\"",
-        "Organize os blocos na ordem que deseja executar",
-        "Use os blocos de repetição e condicionais para criar sequências",
-        "Arraste blocos para dentro dos blocos de controle",
-        "Para excluir um bloco, arraste-o até a lixeira",
-        "Clique em \"Executar\" para ver o carro seguir suas instruções",
-        "O objetivo é chegar na bandeira! 🏁"
-      ],
-      "shortcuts": {
-        "title": "Atalhos do Teclado:",
-        "execute": "Ctrl/Cmd + Enter: Executar programa",
-        "pause": "Ctrl/Cmd + P: Pausar execução", 
-        "stop": "Ctrl/Cmd + S: Parar execução",
-        "newMaze": "Ctrl/Cmd + N: Novo labirinto"
-      },
-      "understood": "Entendi!"
-    }
-  },
-  "en": {
-    "blocks": {
-      "robotStopped": "🛑 Robot stopped!",
-      "stopRobot": "Stop Robot",
-      "checkFlag": "Reached Flag",
-      "movimento": "Movement",
-      "espelhamento": "Mirroring",
-      "controle": "Control",
-      "logico": "Logic",
-      "sensores": "Sensors",
-      "efeitos": "Effects",
-      "returnToStart": "Return to Start",
-      "checkWall": "Check Walls",
-      "moveForward": "Move Forward",
-      "moveBackward": "Move Backward",
-      "turnRight": "Turn Right",
-      "turnLeft": "Turn Left",
-      "mirrorH": "Mirror Horizontal",
-      "mirrorV": "Mirror Vertical",
-      "repeat": "Repeat",
-      "forever": "Forever",
-      "if": "If",
-      "elseIf": "ELSE IF",
-      "else": "ELSE",
-      "waitSeconds": "Wait seconds",
-      "waitMs": "Wait ms",
-      "checkRightWall": "Right Wall",
-      "checkLeftWall": "Left Wall",
-      "checkBackWall": "Back Wall",
-      "emitTone": "Emit Tone X Hz",
-      "stopTone": "Stop Tone",
-      "logico": "Logic",
-      "operadorLogico": "Logical Operators",
-      "verificadorLogico": "Logical Checkers",
-      "logicalIf": "Logical IF",
-      "condition": "Condition",
-      "checkWallRight": "Check Right Wall",
-      "checkWallLeft": "Check Left Wall",
-      "condition1": "Condition 1",
-      "condition2": "Condition 2",
-      "logicalIf": "Logical IF",
-      "condition": "Condition",
-      "checkWallRight": "Check Right Wall",
-      "checkWallLeft": "Check Left Wall",
-      "checkWallBack": "Check Back Wall",
-      "returnBoolean": "Returns Boolean"
-    },
-    "interface": {
-      "dropLogicBlocks": "Drop logic blocks here",
-      "availableBlocks": "Available Blocks",
-      "dragInstructions": "Drag blocks to \"My Program\" area ➡️",
-      "myProgram": "My Program",
-      "dragHere": "Drag blocks here",
-      "dropBlocks": "Drop blocks here to create your program",
-      "execute": "▶ Execute",
-      "pause": "⏸ Pause",
-      "stop": "⏹ Stop",
-      "clear": "🗑 Clear",
-      "save": "💾 Save Program",
-      "open": "📂 Open Program",
-      "newMaze": "🔄 New Maze",
-      "levels": {
-        "easy": "Easy Level (8x8)",
-        "medium": "Medium Level (12x12)",
-        "hard": "Hard Level (15x15)"
-      }
-    },
-    "tutorial": {
-      "title": "How to Play",
-      "steps": [
-        "Choose the maze level",
-        "Drag blocks from the left to \"My Program\" area",
-        "Arrange blocks in the order you want to execute",
-        "Use repetition and conditional blocks to create sequences",
-        "Drag blocks inside control blocks",
-        "To delete a block, drag it to the trash",
-        "Click \"Execute\" to see the car follow your instructions",
-        "The goal is to reach the flag! 🏁"
-      ],
-      "shortcuts": {
-        "title": "Keyboard Shortcuts:",
-        "execute": "Ctrl/Cmd + Enter: Execute program",
-        "pause": "Ctrl/Cmd + P: Pause execution",
-        "stop": "Ctrl/Cmd + S: Stop execution",
-        "newMaze": "Ctrl/Cmd + N: New maze"
-      },
-      "understood": "Got it!"
-    },
-    "messages": {
-      "saved": "Program saved successfully!",
-      "loaded": "Program loaded successfully!",
-      "error": {
-        "loading": "Error loading program. Check the file.",
-        "browser": "Your browser doesn't support drag and drop. Please use a newer browser.",
-        "wall": "Oops! The car hit a wall! 💥",
-        "unexpected": "An unexpected error occurred. Please try again."
-      }
-    }
-  },
-  "es": {
-    "blocks": {
-      "robotStopped": "🛑 ¡Robot detenido!",
-      "stopRobot": "Detener Robot",
-      "checkFlag": "Llegó a la Bandera",
-      "movimento": "Movimientos",
-      "espelhamento": "Espejo",
-      "controle": "Control",
-      "logico": "Lógica",
-      "sensores": "Sensores",
-      "efeitos": "Efectos",
-      "returnToStart": "Volver al Inicio",
-      "checkWall": "Verificar Paredes",
-      "moveForward": "Avanzar",
-      "moveBackward": "Retroceder",
-      "turnRight": "Girar Derecha",
-      "turnLeft": "Girar Izquierda",
-      "mirrorH": "Espejo Horizontal",
-      "mirrorV": "Espejo Vertical",
-      "repeat": "Repetir",
-      "forever": "Para Siempre",
-      "if": "Si",
-      "elseIf": "SINO SI",
-      "else": "SINO",
-      "waitSeconds": "Esperar segundos",
-      "waitMs": "Aguardar ms",
-      "checkRightWall": "Hay Pared Derecha",
-      "checkLeftWall": "Hay Pared Izquierda",
-      "checkBackWall": "Hay Pared Atrás",
-      "emitTone": "Emitir Tono X Hz",
-      "stopTone": "Parar Tono",
-      "logico": "Lógica",
-      "operadorLogico": "Operadores Lógicos",
-      "verificadorLogico": "Verificadores Lógicos",
-      "logicalIf": "SI Lógico",
-      "condition": "Condición",
-      "checkWallRight": "Verificar Pared Derecha",
-      "checkWallLeft": "Verificar Pared Izquierda",
-      "condition1": "Condición 1",
-      "condition2": "Condición 2",
-      "logicalIf": "SI Lógico",
-      "condition": "Condición",
-      "checkWallRight": "Verificar Pared Derecha",
-      "checkWallLeft": "Verificar Pared Izquierda",
-      "checkWallBack": "Verificar Pared Atrás",
-      "returnBoolean": "Retorna Booleano"
-    },
-    "interface": {
-      "dropLogicBlocks": "Arrastra bloques lógicos aquí",
-      "availableBlocks": "Bloques Disponibles",
-      "dragInstructions": "Arrastra los bloques al área \"Mi Programa\" ➡️",
-      "myProgram": "Mi Programa",
-      "dragHere": "Arrastra bloques aquí",
-      "dropBlocks": "Suelta los bloques aquí para crear tu programa",
-      "execute": "▶ Ejecutar",
-      "pause": "⏸ Pausar",
-      "stop": "⏹ Parar",
-      "clear": "🗑 Limpiar",
-      "save": "💾 Guardar Programa",
-      "open": "📂 Abrir Programa",
-      "newMaze": "🔄 Nuevo Laberinto",
-      "levels": {
-        "easy": "Nivel Fácil (8x8)",
-        "medium": "Nivel Medio (12x12)",
-        "hard": "Nivel Difícil (15x15)"
-      }
-    },
-    "tutorial": {
-      "title": "Cómo Jugar",
-      "steps": [
-        "Elige el nivel del laberinto",
-        "Arrastra los bloques de la izquierda al área \"Mi Programa\"",
-        "Organiza los bloques en el orden que deseas ejecutar",
-        "Usa bloques de repetición y condicionales para crear secuencias",
-        "Arrastra bloques dentro de los bloques de control",
-        "Para eliminar un bloque, arrástralo a la papelera",
-        "Haz clic en \"Ejecutar\" para ver el carro seguir tus instrucciones",
-        "¡El objetivo es llegar a la bandera! 🏁"
-      ],
-      "shortcuts": {
-        "title": "Atajos de Teclado:",
-        "execute": "Ctrl/Cmd + Enter: Ejecutar programa",
-        "pause": "Ctrl/Cmd + P: Pausar ejecución",
-        "stop": "Ctrl/Cmd + S: Parar ejecución",
-        "newMaze": "Ctrl/Cmd + N: Nuevo laberinto"
-      },
-      "understood": "¡Entendido!"
-    },
-    "messages": {
-      "saved": "¡Programa guardado con éxito!",
-      "loaded": "¡Programa cargado con éxito!",
-      "error": {
-        "loading": "Error al cargar el programa. Verifica el archivo.",
-        "browser": "Tu navegador no soporta arrastrar y soltar. Por favor, usa un navegador más reciente.",
-        "wall": "¡Ups! ¡El carro chocó contra una pared! 💥",
-        "unexpected": "Ocurrió un error inesperado. Por favor, intenta de nuevo."
-      }
-    }
-  }
-}
+LICENSE:
+MIT License
+
+Copyright (c) 2024 Iago lira
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 

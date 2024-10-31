@@ -1,3 +1,5 @@
+/* https://jigsaw.w3.org/css-validator/ */
+
 /* Theme variables */
 :root {
   /* Light theme (default) */
@@ -51,6 +53,58 @@
   --maze-border: #666;
 }
 
+/* Forest theme */
+[data-theme="forest"] {
+  --bg-color: #2F4538;
+  --text-color: #E8F5E9;
+  --border-color: #81C784;
+  --block-bg: #2E7D32;
+  --block-text: #FFFFFF;
+  --wall-color: #1B5E20;
+  --path-color: #C8E6C9;
+  --tutorial-bg: rgba(27, 94, 32, 0.9);
+  --tutorial-content-bg: #4CAF50;
+  --tutorial-text: #E8F5E9;
+  --message-bg: rgba(76, 175, 80, 0.9);
+  --container-bg: #388E3C;
+  --placeholder-color: #A5D6A7;
+  --instruction-bg: #43A047;
+  --instruction-border: #66BB6A;
+  --program-instruction-bg: #2E7D32;
+  --program-instruction-border: #81C784;
+  --select-bg: #388E3C;
+  --select-text: #FFFFFF;
+  --select-border: #81C784;
+  --button-disabled: rgba(200, 230, 201, 0.3);
+  --maze-border: #66BB6A;
+}
+
+/* Purple theme */
+[data-theme="purple"] {
+  --bg-color: #4A148C;
+  --text-color: #F3E5F5;
+  --border-color: #BA68C8;
+  --block-bg: #6A1B9A;
+  --block-text: #FFFFFF;
+  --wall-color: #4A148C;
+  --path-color: #E1BEE7;
+  --tutorial-bg: rgba(74, 20, 140, 0.9);
+  --tutorial-content-bg: #8E24AA;
+  --tutorial-text: #F3E5F5;
+  --message-bg: rgba(142, 36, 170, 0.9);
+  --container-bg: #7B1FA2;
+  --placeholder-color: #CE93D8;
+  --instruction-bg: #8E24AA;
+  --instruction-border: #AB47BC;
+  --program-instruction-bg: #6A1B9A;
+  --program-instruction-border: #BA68C8;
+  --select-bg: #7B1FA2;
+  --select-text: #FFFFFF;
+  --select-border: #BA68C8;
+  --button-disabled: rgba(225, 190, 231, 0.3);
+  --maze-border: #AB47BC;
+}
+
 /* Base styles */
 body {
   margin: 0;
@@ -62,56 +116,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Theme switcher styles */
-.theme-switch {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 1000;
-}
-
-.theme-switch label {
-  cursor: pointer;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-  background-color: #ccc;
-  border-radius: 12px;
-  position: relative;
-  transition: background-color 0.3s;
-}
-
-.theme-switch input {
-  display: none;
-}
-
-.theme-switch label::after {
-  content: '☀️';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: white;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.3s, content 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.theme-switch input:checked + label {
-  background-color: #666;
-}
-
-.theme-switch input:checked + label::after {
-  transform: translateX(26px);
-  content: '🌙';
-}
 
 /* Language selector styles */
 .language-select {

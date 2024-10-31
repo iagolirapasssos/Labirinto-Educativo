@@ -1,28 +1,10 @@
-/* styles.css */
+/* ==========================================================================
+   Layout Components
+   ========================================================================== */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: var(--bg-color);
-    width: 100%;
-    height: 100vh;
-    overflow-x: hidden;
-    /* Remover estas propriedades que estavam causando a divisão em 3 colunas */
-    /* display: grid;
-    grid-template-columns: minmax(250px, auto) 1fr minmax(250px, auto);
-    gap: 20px; */
-}
-
-/* Painéis principais */
-#blocos-disponiveis,
-#labirinto-container,{
+/* Container Principal e Labirinto */
+#blocos-disponiveis, 
+#labirinto-container {
     position: relative;
     resize: horizontal;
     overflow: auto;
@@ -30,20 +12,105 @@ body {
     max-width: 800px;
 }
 
-.resize-handle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 5px;
-    cursor: ew-resize;
-    background: transparent;
-    transition: background 0.3s;
+/* Containers de Programação */
+.programming-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
-.resize-handle:hover,
-.resize-handle.active {
-    background: rgba(0, 0, 0, 0.1);
+#blocos-disponiveis {
+    width: 300px;
+    min-width: 300px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 20px;
+    resize: horizontal;
+}
+
+/* Container do Programa */
+#programa-container {
+    flex: 1;
+    min-width: 300px;
+    height: 100%;
+    overflow: auto;
+    position: relative;
+}
+
+#programa {
+    width: 100%;
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Estrutura de Tabs */
+.tab-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    font-weight: bold;
+    background-color: #e0e0e0;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab-button.active {
+    background-color: #2196F3;
+    color: white;
+}
+
+.tab-content {
+    flex: 1;
+    display: none;
+    padding: 20px;
+    overflow: auto;
+    margin: 0;
+}
+
+.tab-content.active {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#maze-tab {
+    justify-content: center;
+}
+
+/* Zona de Drop */
+.drop-zone {
+    min-height: 100px;
+    border: #ccc dashed 2px;
+    border-radius: 5px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: #2196F3;
+    background-color: #e3f2fd;
 }
 
 /* Instruções */
@@ -52,9 +119,9 @@ body {
     font-size: 14px;
     margin: 10px 0;
     padding: 10px;
-    background-color: #fff3cd;
+    background-color: var(--instruction-bg);
     border-radius: 5px;
-    border-left: 4px solid #ffc107;
+    border-left: 4px solid var(--instruction-border);
 }
 
 .instrucao-programa {
@@ -62,13 +129,16 @@ body {
     font-size: 14px;
     margin: 10px 0;
     padding: 10px;
-    background-color: #e7f3ff;
+    background-color: var(--program-instruction-bg);
     border-radius: 5px;
-    border-left: 4px solid #2196F3;
+    border-left: 4px solid var(--program-instruction-border);
 }
 
+/* ==========================================================================
+   Block Components
+   ========================================================================== */
 
-/* Blocos */
+/* Estilos Base dos Blocos */
 .bloco {
     padding: 10px;
     margin: 8px 0;
@@ -85,33 +155,10 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Blocos existentes */
-#programa .bloco-movimento { background-color: #4CAF50; }
-#programa .bloco-espelhamento { background-color: #E91E63; }
-#programa .bloco-controle { background-color: #2196F3; }
-#programa .bloco-logico { background-color: #9c27b0; }
-#programa .bloco-sensores { background-color: #795548; } 
-#programa .bloco-efeitos { background-color: #FF9800; }
-
-/* Novos blocos SENÃO SE e SENÃO */
-#programa .bloco-senaoSe { background-color: #FF9800; }
-#programa .bloco-senao { background-color: #FF5722; }
-
-/* Novos blocos para verificar paredes */
-#programa .bloco-temParedeDireita { background-color: #795548; }
-#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
-#programa .bloco-temParedeTras { background-color: #5D4037; }
-
-/* Novo bloco Aguardar */
-#programa .bloco-aguardar { background-color: #3F51B5; }
-
-/* Blocos na área disponível */
-#blocos-disponiveis .bloco { opacity: 0.85; }
-
-/* Hover e Dragging */
+/* Estados dos Blocos */
 .bloco:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .bloco.dragging {
@@ -119,13 +166,54 @@ body {
     transform: scale(1.05);
 }
 
+/* Manipulador do Bloco */
 .bloco-handle {
     cursor: move;
     font-size: 20px;
     padding: 0 5px;
 }
 
-/* Containers */
+/* Conteúdo do Bloco */
+.bloco-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+}
+
+/* Tipos de Blocos */
+#programa .bloco-movimento { background-color: #4CAF50; }
+#programa .bloco-espelhamento { background-color: #E91E63; }
+#programa .bloco-controle { background-color: #2196F3; }
+#programa .bloco-logico { background-color: #9c27b0; }
+#programa .bloco-sensores { background-color: #795548; }
+#programa .bloco-efeitos { background-color: #FF9800; }
+#programa .bloco-senaoSe { background-color: #FF9800; }
+#programa .bloco-senao { background-color: #FF5722; }
+#programa .bloco-temParedeDireita { background-color: #795548; }
+#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
+#programa .bloco-temParedeTras { background-color: #5D4037; }
+#programa .bloco-aguardar { background-color: #3F51B5; }
+
+/* Ícones dos Blocos */
+#programa .bloco-temParedeDireita::before,
+#programa .bloco-temParedeEsquerda::before,
+#programa .bloco-temParedeTras::before {
+    content: '🛑';
+    margin-right: 5px;
+}
+
+#programa .bloco-emitirTom::before {
+    content: '🔊';
+    margin-right: 5px;
+}
+
+#programa .bloco-pararTom::before {
+    content: '🔇';
+    margin-right: 5px;
+}
+
+/* Container dos Blocos */
 .bloco-container {
     min-height: 50px;
     padding: 10px;
@@ -139,95 +227,43 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Placeholder */
+/* Blocos Lógicos */
+.bloco-operadorLogico {
+    background-color: #FF5722;
+}
+
+.bloco-verificadorLogico {
+    background-color: #795548;
+}
+
+.bloco-container-logico {
+    min-height: 40px;
+    padding: 8px;
+    margin: 5px 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: rgba(255, 255, 255, 0.3) dashed 2px;
+    border-radius: 4px;
+}
+
+/* Indicadores Lógicos */
+[data-retorna-logico="true"]::after {
+    content: "→ " attr(data-tipo);
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    opacity: 0.7;
+    color: white;
+}
+
+/* Placeholders */
 .container-placeholder {
     color: rgba(255, 255, 255, 0.7);
     text-align: center;
     padding: 10px;
     font-style: italic;
     font-size: 0.9em;
-}
-
-/* Estilização aprimorada para #nivel-select */
-#nivel-select {
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: 2px solid #2196F3;
-    background-color: #ffffff;
-    font-size: 16px;
-    color: #333333;
-    appearance: none; /* Remove a seta padrão em alguns navegadores */
-    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path d="M6 8.586L1.707 4.293 3.121 2.879 6 5.758l2.879-2.879 1.414 1.414L6 8.586z" fill="%23333333"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px;
-    cursor: pointer;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-#nivel-select:hover {
-    border-color: #1976D2;
-}
-
-#nivel-select:focus {
-    outline: none;
-    border-color: #1976D2;
-    box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
-}
-
-/* Área do programa */
-/* E adicione estas novas definições */
-#programa-container {
-    flex: 1;
-    min-width: 300px;
-    height: 100%;
-    overflow: auto;
-    position: relative;
-}
-
-/* Ajuste do header do programa */
-#programa-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-
-#resize-handle {
-    cursor: ew-resize;
-    padding: 5px;
-    font-size: 20px;
-}
-
-/* Conteúdo do programa */
-#programa {
-    width: 100%;
-    height: calc(100% - 60px); /* Ajusta para considerar o header */
-    overflow-y: auto;
-    padding: 10px;
-    box-sizing: border-box;
-    background: var(--container-bg);
-}
-
-/* Área de soltura */
-.drop-zone {
-    min-height: 100px;
-    border: 2px dashed #ccc;
-    border-radius: 5px;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
-}
-
-.drop-zone.drag-over {
-    border-color: #2196F3;
-    background-color: #e3f2fd;
-}
-
-#sequencia-blocos {
-    min-height: 200px;
 }
 
 .programa-placeholder {
@@ -237,15 +273,20 @@ body {
     font-style: italic;
 }
 
-/* Labirinto */
+/* ==========================================================================
+   Maze Components
+   ========================================================================== */
+
+/* Labirinto Base */
 #labirinto {
     position: relative;
     margin: 20px auto;
     background: #fff;
-    border: 2px solid #333;
-    overflow: hidden; /* Evitar que o carro apareça fora do labirinto durante transições */
+    border: var(--maze-border) solid 2px;
+    overflow: hidden;
 }
 
+/* Células do Labirinto */
 .celula {
     position: absolute;
     width: 40px;
@@ -256,14 +297,14 @@ body {
 }
 
 .parede {
-    background-color: #8b4513;
+    background-color: var(--wall-color);
 }
 
 .caminho {
-    background-color: #ffffff;
+    background-color: var(--path-color);
 }
 
-/* Atualizar o estilo do carro */
+/* Carro e Chegada */
 .carro {
     position: absolute;
     width: 30px;
@@ -271,7 +312,7 @@ body {
     transform-origin: center;
     transition: all 0.3s ease;
     z-index: 10;
-    transform: translate(-50%, -50%); /* Garante a centralização do elemento */
+    transform: translate(-50%, -50%);
 }
 
 .carro svg {
@@ -293,17 +334,45 @@ body {
     height: 40px;
 }
 
-/* Controles */
+/* ==========================================================================
+   Controls & Buttons
+   ========================================================================== */
+
+/* Controles do Nível */
 #nivel-controles {
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
 }
 
+/* Seletor de Nível */
 #nivel-select {
-    /* Estilização já atualizada anteriormente */
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: var(--select-border) solid 2px;
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    font-size: 16px;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath d='M6 8.586L1.707 4.293 3.121 2.879 6 5.758l2.879-2.879 1.414 1.414L6 8.586z' fill='%23333333'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+#nivel-select:hover {
+    border-color: #1976D2;
+}
+
+#nivel-select:focus {
+    outline: none;
+    border-color: #1976D2;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+/* Botões de Controle */
 #controles {
     display: flex;
     gap: 10px;
@@ -322,15 +391,100 @@ button {
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background-color: var(--button-disabled);
 }
 
+/* Cores dos Botões */
 #executar { background-color: #4CAF50; color: white; }
 #pausar { background-color: #ff9800; color: white; }
 #parar { background-color: #f44336; color: white; }
 #limpar { background-color: #9e9e9e; color: white; }
 #novo-labirinto { background-color: #2196F3; color: white; }
-#salvar-programa { background-color: #FFC107; color: white; } /* Novo Botão Salvar */
-#abrir-programa { background-color: #00BCD4; color: white; } /* Novo Botão Abrir */
+#salvar-programa { background-color: #FFC107; color: white; }
+#abrir-programa { background-color: #00BCD4; color: white; }
+
+/* ==========================================================================
+   Configuration Components
+   ========================================================================== */
+
+/* Container de Configuração */
+.config-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 5rem; /* Adiciona espaço de 1rem entre os elementos */
+    z-index: 1000;
+    align-items: center;
+}
+
+/* Seletores de Configuração */
+.config-container select {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 2px solid var(--select-border);
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.config-container select:hover {
+    border-color: var(--select-border);
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* Seletor de Tema */
+.theme-switch {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.theme-switch select {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 2px solid var(--select-border);
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+/* Seletor de Idioma */
+.language-select {
+    margin-right: 4rem; /* Ajusta o espaço à direita do seletor de idioma */
+    position: static;
+    display: flex;
+    align-items: center;
+}
+
+.language-select select {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: var(--select-border) solid 2px;
+    background-color: #333333;
+    color: var(--select-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.language-select select:hover {
+    border-color: #1976D2;
+}
+
+/* ==========================================================================
+   UI Components
+   ========================================================================== */
 
 /* Mensagens */
 #mensagem {
@@ -356,14 +510,14 @@ button:disabled {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0,0,0,0.7);
+    background-color: var(--tutorial-bg);
     z-index: 2000;
     align-items: center;
     justify-content: center;
 }
 
 .tutorial-content {
-    background: white;
+    background: var(--tutorial-content-bg);
     padding: 20px;
     border-radius: 10px;
     max-width: 500px;
@@ -382,9 +536,10 @@ button:disabled {
 
 .tutorial-content li {
     margin: 10px 0;
-    color: #666;
+    color: var(--tutorial-text);
 }
 
+/* Botões de Ajuda e Lixeira */
 .botao-ajuda {
     position: fixed;
     bottom: 40px;
@@ -398,9 +553,8 @@ button:disabled {
     z-index: 1000;
 }
 
-/* Lixeira */
 #lixeira {
-        position: fixed;
+    position: fixed;
     bottom: 20px;
     left: 20px;
     width: 50px;
@@ -413,7 +567,7 @@ button:disabled {
     justify-content: center;
     font-size: 24px;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     z-index: 1000;
 }
@@ -423,212 +577,359 @@ button:disabled {
     transform: scale(1.1);
 }
 
-/* Blocos de espelhamento */
-.bloco-espelhamento {
-    background-color: #E91E63;
-}
-
-/* Container de blocos aninhados */
-.bloco-container {
-    min-height: 50px;
-    padding: 10px;
-    margin: 5px 0 5px 20px;
-    border-left: 2px dashed rgba(255, 255, 255, 0.3);
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-}
-
-.bloco-container.drag-over {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Melhorar visual dos blocos */
-.bloco-conteudo {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-grow: 1;
-}
-
-/* Novos blocos */
-#programa .bloco-senaoSe { background-color: #FF9800; }
-#programa .bloco-senao { background-color: #FF5722; }
-
-/* Novos blocos para verificar paredes */
-#programa .bloco-temParedeDireita { background-color: #795548; }
-#programa .bloco-temParedeEsquerda { background-color: #6D4C41; }
-#programa .bloco-temParedeTras { background-color: #5D4037; }
-
-/* Novo bloco Aguardar */
-#programa .bloco-aguardar { background-color: #3F51B5; }
-
-/* Ícones para os blocos de verificar paredes (Opcional) */
-#programa .bloco-temParedeDireita::before,
-#programa .bloco-temParedeEsquerda::before,
-#programa .bloco-temParedeTras::before {
-    content: '🛑'; /* Ícone de parede */
-    margin-right: 5px;
-}
-
-/* Novos blocos de Áudio */
-#programa .bloco-emitirTom { background-color: #FF9800; }
-#programa .bloco-pararTom { background-color: #FF5722; }
-
-/* Ícones para os blocos de Áudio (Opcional) */
-#programa .bloco-emitirTom::before {
-    content: '🔊'; /* Ícone de alto-falante */
-    margin-right: 5px;
-}
-
-#programa .bloco-pararTom::before {
-    content: '🔇'; /* Ícone de alto-falante mudo */
-    margin-right: 5px;
-}
-
-const estilosNovos = `
-.bloco-logico {
-    background-color: #9c27b0;
-}
-
-.bloco-operadorLogico {
-    background-color: #FF5722;
-}
-
-.bloco-verificadorLogico {
-    background-color: #795548;
-}
-
-.bloco-container-logico {
-    min-height: 40px;
-    padding: 8px;
-    margin: 5px 0;
-    background-color: rgba(0, 0, 0, 0.1);
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-}
-
-.container-titulo {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 5px;
-}
-
-/* Indicador visual para blocos que retornam valores booleanos */
-/* Indicador de retorno booleano */
-[data-retorna-logico="true"]::after {
-    content: "→ " attr(data-tipo);
+/* Redimensionador */
+.resize-handle {
     position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8em;
-    opacity: 0.7;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: ew-resize;
+    background: transparent;
+    transition: background 0.3s;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+/* Tablet e Mobile */
+@media (max-width: 768px) {
+    /* Configurações Gerais */
+    .touch-device .language-select, 
+    .touch-device .theme-switch {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+    }
+
+    .touch-device body {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    /* Blocos e Containers */
+    .touch-device #blocos-disponiveis {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: row;
+        padding: 10px;
+    }
+
+    .touch-device #blocos-disponiveis .grupo-blocos {
+        min-width: 200px;
+        margin-right: 15px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    /* Labirinto */
+    .touch-device #labirinto-container {
+        width: 100%;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .touch-device #labirinto {
+        max-width: 100%;
+        overflow: auto;
+        transform-origin: center;
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Programa */
+    .touch-device #programa-container {
+        width: 100%;
+        max-width: none;
+        height: 300px;
+    }
+
+    /* Controles */
+    .touch-device #controles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .touch-device button {
+        width: 100%;
+        margin: 0;
+    }
+
+    .touch-device #nivel-controles {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .touch-device #nivel-select {
+        width: 100%;
+    }
+
+    /* Blocos */
+    .touch-device .bloco {
+        margin: 5px 0;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .touch-device .bloco-container {
+        margin-left: 20px;
+        padding: 8px;
+    }
+
+    .touch-device .bloco.dragging {
+        position: fixed;
+        z-index: 1000;
+        width: 90%;
+        max-width: 300px;
+        opacity: 0.9;
+    }
+
+    /* UI Elements */
+    .touch-device .tutorial-content {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .touch-device .tutorial-atalhos {
+        display: none;
+    }
+
+    .touch-device #lixeira,
+    .touch-device #ajuda {
+        bottom: 10px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .touch-device #mensagem {
+        width: 90%;
+        max-width: none;
+        left: 5%;
+        transform: none;
+        padding: 15px;
+        font-size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 50px;
+    }
+}
+
+/* Landscape Mode */
+@media (orientation: landscape) {
+    .touch-device .config-menu {
+        position: relative;
+        padding: 5px;
+    }
+
+    .touch-device #blocos-disponiveis {
+        height: 150px;
+    }
+
+    .touch-device #programa-container {
+        height: 200px;
+    }
+
+    .touch-device #controles {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Pequenas Telas */
+@media (max-width: 320px) {
+    .touch-device .bloco {
+        font-size: 14px;
+    }
+
+    .touch-device button {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .touch-device #lixeira,
+    .touch-device #ajuda {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+}
+
+/* ==========================================================================
+   Block Input & Select Styles
+   ========================================================================== */
+
+/* Base styles for inputs and selects within blocks */
+.bloco input,
+.bloco select {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
     color: white;
+    font-size: 14px;
+    padding: 4px 8px;
+    margin: 0 4px;
+    min-width: 60px;
+    transition: all 0.3s ease;
+    outline: none;
+    backdrop-filter: blur(2px);
 }
 
-
-
-
-/* tab */
-/* Container principal das tabs */
-.tab-container {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
+/* Input specific styles */
+.bloco input {
+    /* Remove spinner arrows for number inputs */
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
-/* Botões das tabs */
-.tab-buttons {
-    display: flex;
-    gap: 10px;
-    padding: 10px 20px;
-    background: var(--bg-color);
+/* Remove spinner arrows for webkit browsers */
+.bloco input::-webkit-outer-spin-button,
+.bloco input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-.tab-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px 5px 0 0;
+/* Hover states */
+.bloco input:hover,
+.bloco select:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* Focus states */
+.bloco input:focus,
+.bloco select:focus {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Select specific styles */
+.bloco select {
     cursor: pointer;
-    font-weight: bold;
-    background-color: #e0e0e0;
-    color: #666;
-    transition: all 0.3s;
+    /* Custom arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5h6l-3 3z' fill='rgba(255,255,255,0.8)'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px; /* Space for arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
-.tab-button.active {
-    background-color: #2196F3;
-    color: white;
+/* Select options styling */
+.bloco select option {
+    background-color: var(--block-bg);
+    color: var(--text-color);
+    padding: 8px;
 }
 
-/* Conteúdo das tabs */
-.tab-content {
-    flex: 1;
-    display: none;
-    background: var(--bg-color);
-    padding: 20px;
-    overflow: auto;
-    margin: 0; /* Remove margens */
+/* Touch device specific styles */
+@media (hover: none) {
+    .bloco input,
+    .bloco select {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 6px 10px; /* Larger touch target */
+    }
+
+    .bloco select {
+        padding-right: 30px; /* Larger touch area for arrow */
+    }
 }
 
-/* Estrutura geral */
-.tab-content.active {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+/* Block type specific styles */
+/* Movimento */
+#programa .bloco-movimento input,
+#programa .bloco-movimento select {
+    border-color: rgba(76, 175, 80, 0.5);
 }
 
-/* Container do labirinto */
-#maze-tab {
-    justify-content: center; /* Centraliza o conteúdo */
+/* Controle */
+#programa .bloco-controle input,
+#programa .bloco-controle select {
+    border-color: rgba(33, 150, 243, 0.5);
 }
 
-#labirinto-container {
-    max-width: 1200px;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* Lógico */
+#programa .bloco-logico input,
+#programa .bloco-logico select {
+    border-color: rgba(156, 39, 176, 0.5);
 }
 
-/* Container de programação */
-.programming-container {
-    display: flex;
-    gap: 20px;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+/* Sensores */
+#programa .bloco-sensores input,
+#programa .bloco-sensores select {
+    border-color: rgba(121, 85, 72, 0.5);
 }
 
-/* Blocos disponíveis */
-#blocos-disponiveis {
-    width: 300px;
-    min-width: 300px;
-    flex-shrink: 0; /* Impede que encolha */
-    overflow-y: auto;
-    padding: 20px;
-    resize: horizontal;
+/* Efeitos */
+#programa .bloco-efeitos input,
+#programa .bloco-efeitos select {
+    border-color: rgba(255, 152, 0, 0.5);
 }
 
-/* Container de programação principal */
-.programming-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    gap: 0;
-    overflow: hidden; /* Previne scroll horizontal indesejado */
+/* Input placeholders */
+.bloco input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
-/* Configurações e idioma */
-.config-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 1000;
+/* Disabled state */
+.bloco input:disabled,
+.bloco select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .bloco input,
+[data-theme="dark"] .bloco select {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .bloco input:hover,
+[data-theme="dark"] .bloco select:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .bloco input:focus,
+[data-theme="dark"] .bloco select:focus {
+    background: rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Animation for focus */
+@keyframes inputFocus {
+    0% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+    50% { box-shadow: 0 0 8px rgba(255, 255, 255, 0.3); }
+    100% { box-shadow: 0 0 4px rgba(255, 255, 255, 0.2); }
+}
+
+.bloco input:focus,
+.bloco select:focus {
+    animation: inputFocus 1s ease-in-out infinite;
 }
