@@ -10,7 +10,7 @@ class I18nThemeManager {
 
     async initialize() {
         try {
-            const response = await fetch('../data/translations.json');
+            const response = await fetch('..data/translations.json');
             this.translations = await response.json();
             
             // Initialize language
